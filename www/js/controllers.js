@@ -1,21 +1,25 @@
 angular.module('starter.controllers', [])
 
 .controller('FolderCtrl', function($scope, $stateParams, $rootScope, Folders, ArticleService) {
-  console.log($stateParams.folderId);
+  console.log($stateParams);
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
   
-  var defaultFatherId = $stateParams.folderId;
+  //var defaultFatherId = $stateParams.folderId;
   $scope.islastFolder = false;
-  $scope.titleName = '';
+  //$scope.titleName = '';
   $scope.noMoreAvailable = false;
   $rootScope.folderCurrentPage = 1;
+  var supModule = $stateParams.supModuleName;
 
-  Folders.getFolderList(defaultFatherId).then(function(data){
-    $scope.folders = data;  
+  var module = $stateParams.moduleName;
+  var subModule = $stateParams.subModuleName;
+
+  Folders.getFolderList(supModule, module, subModule).then(function(data){
+    $scope.modules = data;  
     console.log(data);
     if (data.length == 0) {
       $scope.islastFolder = true;
-      ArticleService.getArticleList($stateParams.folderId, $rootScope.folderCurrentPage).then(function(data){
+      ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
           $scope.articles = data;  
           if (data.length == 0) {
             $scope.noMoreAvailable = true;
@@ -40,7 +44,7 @@ angular.module('starter.controllers', [])
     //$scope.show();
     $rootScope.folderCurrentPage = 1;
     $scope.noMoreAvailable = false;
-    ArticleService.getArticleList($stateParams.folderId, $rootScope.folderCurrentPage).then(function(data) {
+    ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data) {
       $scope.articles = data;
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
@@ -60,7 +64,7 @@ angular.module('starter.controllers', [])
     //$scope.show();
     var currentPage = $rootScope.folderCurrentPage;
     $rootScope.folderCurrentPage =  currentPage + 1;
-    ArticleService.getArticleList($stateParams.folderId, $rootScope.folderCurrentPage).then(function(data){
+    ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
       console.log('$scope.articles='+$scope.articles);
       $scope.articles = $scope.articles.concat(data);
       if (data.length == 0) {
@@ -80,7 +84,7 @@ angular.module('starter.controllers', [])
   $scope.search = function(query){   
     //console.log('val=', query);  
     var path = ''; 
-    ArticleService.search(query, path).then(function(data){
+    ArticleService.search(query, supModule,module,subModule).then(function(data){
       $scope.islastFolder = false;
       $scope.articles = data;
     });
@@ -116,21 +120,26 @@ angular.module('starter.controllers', [])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
-  console.log($stateParams.folderId);
+  console.log($stateParams);
   console.log('lawsCurrentPage='+ $rootScope.lawsCurrentPage);
 
-  var defaultFatherId = $stateParams.folderId;
+  var supModule = $stateParams.supModuleName;
+
+  var module = $stateParams.moduleName;
+  var subModule = $stateParams.subModuleName;
+
+  //var defaultFatherId = '';
   $scope.islastFolder = false;
-  $scope.titleName = '';
+  //$scope.titleName = '';
   $scope.noMoreAvailable = false;
   $rootScope.lawsCurrentPage = 1;
 
-  Folders.getFolderList(defaultFatherId).then(function(data){
-    $scope.folders = data;  
+  Folders.getFolderList(supModule, module, subModule).then(function(data){
+    $scope.modules = data;  
     console.log(data);
     if (data.length == 0) {
       $scope.islastFolder = true;
-      ArticleService.getArticleList($stateParams.folderId, $rootScope.lawsCurrentPage).then(function(data){
+      ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
           $scope.articles = data;  
           if (data.length == 0) {
             $scope.noMoreAvailable = true;
@@ -155,7 +164,7 @@ angular.module('starter.controllers', [])
     //$scope.show();
     $rootScope.lawsCurrentPage = 1;
     $scope.noMoreAvailable = false;
-    ArticleService.getArticleList($stateParams.folderId, $rootScope.lawsCurrentPage).then(function(data) {
+    ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data) {
       $scope.articles = data;
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
@@ -175,7 +184,7 @@ angular.module('starter.controllers', [])
     //$scope.show();
     var currentPage = $rootScope.lawsCurrentPage;
     $rootScope.lawsCurrentPage =  currentPage + 1;
-    ArticleService.getArticleList($stateParams.folderId, $rootScope.lawsCurrentPage).then(function(data){
+    ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
       $scope.articles = $scope.articles.concat(data);
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
@@ -193,16 +202,60 @@ angular.module('starter.controllers', [])
 
   $scope.search = function(query){   
     //console.log('val=', query);   
-    var path = ''; 
-    ArticleService.search(query, path).then(function(data){
+     
+    ArticleService.search(query, supModule,module,subModule).then(function(data){
       $scope.islastFolder = false;
       $scope.articles = data;
     });
   };
 })
 
-.controller('AccountCtrl', function($scope) {
+.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicPopover, $timeout) {
   $scope.settings = {
     enableFriends: true
   };
+
+  $scope.useCache = $rootScope.useCache;
+
+   $scope.clean = function(){   
+     var myPopup = $ionicPopup.show({
+      template: '正在清除缓存...',
+      title: '清除缓存'
+    });
+    myPopup.then(function(res) {
+      console.log('clean!', res);
+    });
+    $timeout(function() {
+      myPopup.close(); //close the popup after 3 seconds for some reason
+    }, 3000);
+  };
+
+  $scope.setCache = function(){
+    console.log($scope.useCache);
+    if (!$scope.useCache) {
+      $rootScope.useCache = true;
+    }else{
+      $rootScope.useCache = false;
+    };
+  };
+
+  $scope.now = new Date();
+
+  // .fromTemplate() method
+  var template = '<ion-popover-view style="height: 180px"><ion-content><ion-list><ion-item>客服：180-1868-3313</ion-item><ion-item>微信：Huang_Benz</ion-item><ion-item>QQ：419212048</ion-item></ion-list></ion-content></ion-popover-view>';
+
+  $scope.popover = $ionicPopover.fromTemplate(template, {
+    scope: $scope
+  });
+
+  $scope.openPopover = function($event) {
+    $scope.popover.show($event);
+  };
+  $scope.closePopover = function() {
+    $scope.popover.hide();
+  };
+
+  $scope.$on('$destroy', function() {
+    $scope.popover.remove();
+  });
 });

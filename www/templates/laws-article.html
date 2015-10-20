@@ -6,20 +6,20 @@
 -->
 <ion-view view-title="详情">
   <ion-content>
-    <h1 style="position: relative;left: 10px;">{{article.title}}</h1>
+    <h1 style="position: relative;left: 10px;">{{article.tBt}}</h1>
     <!-- <h4>浏览次数：{{article.viewCount}}</h4> -->
     <div>
       <div>
-        <div style="float:left;font-size:12px;position: relative;left: 10px;" ng-if="article.adminName">
+        <!-- <div style="float:left;font-size:12px;position: relative;left: 10px;" ng-if="article.adminName">
           <i class="ion-person"></i>&nbsp;&nbsp;
-          <span style="color:#00F">{{article.adminName}}</span></div>
+          <span style="color:#00F">{{article.adminName}}</span></div> -->
         <div style="float:right;position: relative;right:10px;" ng-if="article.createTime">
           <i class="ion-calendar"></i>
-          <span> {{article.createTime |date:'yyyy-MM-dd'}}</span></div>
+          <span> {{article.tDate |date:'yyyy-MM-dd'}}</span></div>
       </div>
       <div style="width:800px;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>
       <div style="position: relative;top:20px;">
-        <div><span ng-bind-html="article.content"></span></div>
+        <div><span ng-bind-html="article.tZw"></span></div>
       </div>
     </div>
     

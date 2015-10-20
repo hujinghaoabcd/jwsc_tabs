@@ -4,21 +4,21 @@ angular.module('starter.services', [])
 
   return {
     /**获取分类列表**/
-    getFolderList : function(fatherId) {
+    getFolderList : function(supModule, module, subModule) {
       var defer = $q.defer();
         $http({
           method: "post",
-          url: $rootScope.baseUrl + "/folder/getFolderByFatherId",
-          params: {'fatherId':fatherId},
+          url: $rootScope.baseUrl + "/module/getModule",
+          params: {'supModule':supModule,'module':module,'subModule':subModule},
           headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
           },
-          //cache: $rootScope.useCache
+          cache: $rootScope.useCache
         }).success(function(data){
           //console.log(data.result);
           defer.resolve(data.result);
         }).error(function(err){
-          console.log("fail to http POST folder/getFolderByFatherId");
+          console.log("fail to http POST module/getModule");
           defer.reject(err);
         });     
       return defer.promise;
@@ -32,58 +32,61 @@ angular.module('starter.services', [])
   var service = {    // our factory definition
     
     /**获取列表**/
-    getArticleList : function(folderId, pageNo) {
+    getArticleList : function(supLm, lm, subLm, pageNo) {
       var defer = $q.defer();
         $http({
           method: "post",
-          url: $rootScope.baseUrl + "/article/getListByPage",
-          params: {'pageNo':pageNo,'folderId':folderId},
+          url: $rootScope.baseUrl + "/doc/getListByPage",
+          params: {'pageNo':pageNo,'supLm':supLm, 'lm':lm, 'subLm':subLm},
           headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
           },
-          //cache: $rootScope.useCache
+          cache: $rootScope.useCache
         }).success(function(data){
           //console.log(data.result);
           defer.resolve(data.result);
         }).error(function(err){
-          console.log("fail to http POST article/getListByPage");
+          console.log("fail to http POST doc/getListByPage");
           defer.reject(err);
         });     
       return defer.promise;
     },
     /** 获取详细内容 **/
     getArticle :function(){
+      console.log($stateParams.docid)
       var defer = $q.defer();
       $http({
         method: "post",
-        url: $rootScope.baseUrl + "/article/getById",
-        params: {'id':$stateParams.articleId},
+        url: $rootScope.baseUrl + "/doc/getDocById",
+        params: {'id':$stateParams.docid},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        //cache: $rootScope.useCache
+        cache: $rootScope.useCache
        }).success(function (data) {
         defer.resolve(data.result);
        }).error(function (err) {
-        console.log("fail to http POST article/getById");
+        console.log("fail to http POST doc/getDocById");
         defer.reject(err);
        });
      return defer.promise;
     },
+
     /** 搜索 **/
-    search : function(val, path){
+    search : function(val, supLm, lm, subLm){
       var defer = $q.defer();
       $http({
         method: "post",
-        url: $rootScope.baseUrl + "/article/search",
-        params: {'val':val,'path':path},
+        url: $rootScope.baseUrl + "/doc/search",
+        params: {'val':val,'supLm':supLm, 'lm':lm, 'subLm':subLm},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        },
+        cache: $rootScope.useCache
       }).success(function (data) {
         defer.resolve(data.result);
       }).error(function (err) {
-        console.log("fail to http POST article/search");
+        console.log("fail to http POST doc/search");
         defer.reject(err);
       });
      return defer.promise;

@@ -9,8 +9,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
 .run(function($rootScope,$ionicPlatform) {
   $ionicPlatform.ready(function() {
-    $rootScope.baseUrl = "http://192.168.1.103:8080";
-    $rootScope.baseUrlImg = "http://192.168.1.103:8080";
+    $rootScope.baseUrl = "http://192.168.1.105:8080";
+    $rootScope.baseUrlImg = "http://192.168.1.105:8080";
     $rootScope.folderCurrentPage = 1;
     $rootScope.lawsCurrentPage = 1;
     $rootScope.useCache = false;//是否使用缓存
@@ -47,7 +47,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   // Each tab has its own nav history stack:
 
   .state('tab.folder', {
-    url: '/folder/:folderId',
+    url: '/folder/:supModuleName/:moduleName/:subModuleName',
     views: {
       'tab-dash': {
         templateUrl: 'templates/tab-folder.html',
@@ -57,7 +57,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   })
 
   .state('tab.article', {
-    url: '/articles/:articleId',
+    url: '/articles/:docid',
     views: {
       'tab-dash': {
         templateUrl: 'templates/tab-article.html',
@@ -67,7 +67,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   })
 
   .state('tab.laws', {
-      url: '/laws/:folderId',
+      url: '/laws/:supModuleName/:moduleName/:subModuleName',
       views: {
         'tab-laws': {
           templateUrl: 'templates/tab-laws.html',
@@ -76,7 +76,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       }
     })
   .state('tab.lawsArticle', {
-      url: '/lawsArticle/:articleId',
+      url: '/lawsArticle/:docid',
       views: {
         'tab-laws': {
           templateUrl: 'templates/laws-article.html',
@@ -93,9 +93,18 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
         controller: 'AccountCtrl'
       }
     }
+  })
+
+  .state('tab.us', {
+    url: '/us',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/us.html'
+      }
+    }
   });
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/folder/6');
+  $urlRouterProvider.otherwise('/tab/folder/执法工作手册//');
 
 });

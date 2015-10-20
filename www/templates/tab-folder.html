@@ -10,9 +10,11 @@
           </div>
     </div>
     <ion-list ng-if="!islastFolder">
-        <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="folder in folders" type="item-text-wrap" href="#/tab/folder/{{folder.folderId}}">
+        <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="module in modules" type="item-text-wrap" href="#/tab/folder/{{module.supModuleName}}/{{module.moduleName}}/{{module.subModuleName}}">
           <img ng-src="img/jh_logo.jpg"> 
-          <h2>{{folder.name}}</h2>
+          <div ng-if="!module.subModuleName"><h2>{{module.moduleName}}</h2></div>
+          <div ng-if="module.subModuleName"><h2>{{module.subModuleName}}</h2></div>
+
           <!-- <p>手册</p> -->
           <i class="icon ion-chevron-right icon-accessory"></i>
 
@@ -26,18 +28,18 @@
         <!-- ng-if="articleIds.length > 0" -->
         </ion-refresher>
         <ion-list >
-          <ion-item  class="item-avatar" ng-repeat="article in articles" href="#/tab/articles/{{article.articleId}}"
+          <ion-item  class="item-avatar" ng-repeat="article in articles" href="#/tab/articles/{{article.docid}}"
             collection-item-width="'100%'" >
             <img ng-src="{{baseUrlImg}}/{{article.picture}}" ng-if="article.picture != null" reset-img>
             <!-- <img ng-src="img/jh_logo.jpg" ng-if="article.picture == ''" reset-img> -->
-            <h2><i class="ion-document-text"></i> {{article.title}}</h2>
-            <p class="summary">
+            <h2><!-- <i class="ion-document-text"></i> --> {{article.tBt}}</h2>
+            <!-- <p class="summary">
               <span class="tab">{{article.summary}}</span> 
-            </p>
+            </p> -->
             <p class="summary">
               <!-- <span  class="tab hl">精华 &nbsp;&nbsp;|&nbsp;&nbsp;</span> -->
-              <span ><i class="ion-person"></i>&nbsp;&nbsp;{{article.adminName}}</span>
-              <span style="float:right;"><i class="ion-calendar"></i> {{article.createTime |date:'yyyy-MM-dd'}}</span>
+              <span ><i class="icon ion-clipboard"></i>&nbsp;&nbsp; {{article.lm}}/{{article.sublm}}</span>
+              <span style="float:right;"><i class="ion-calendar"></i> {{article.tDate | date:'yyyy-MM-dd'}}</span>
             </p>       
           </ion-item>
         </ion-list>
