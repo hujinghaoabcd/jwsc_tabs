@@ -1,42 +1,62 @@
 angular.module('starter.controllers', [])
 
-.controller('FolderCtrl', function($scope, $stateParams, $rootScope, Folders, ArticleService) {
-  console.log($stateParams);
+.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, Folders, ArticleService, dbService) {
+  
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
+  
   
   //var defaultFatherId = $stateParams.folderId;
   $scope.islastFolder = false;
   //$scope.titleName = '';
   $scope.noMoreAvailable = false;
   $rootScope.folderCurrentPage = 1;
+  console.log('folderCurrentPage set='+ $rootScope.folderCurrentPage);
   var supModule = $stateParams.supModuleName;
 
   var module = $stateParams.moduleName;
   var subModule = $stateParams.subModuleName;
+  console.log('supModule='+ supModule + '. module='+ module + '. subModule='+ subModule);
 
-  Folders.getFolderList(supModule, module, subModule).then(function(data){
-    $scope.modules = data;  
-    console.log(data);
-    if (data.length == 0) {
-      $scope.islastFolder = true;
-      ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
-          $scope.articles = data;  
-          if (data.length == 0) {
-            $scope.noMoreAvailable = true;
-          };
-          //$scope.hide();
-      },function(){
-          $scope.noMoreAvailable = true;
-          //$scope.hide();
-          //$scope.showAlert();
-      });
+  //var db1；
+  /*$ionicPlatform.ready(function(){
+    dbService.setup();
+  });*/
+  document.addEventListener("deviceready", onDeviceReady, false);
+
+    // device APIs are available
+    //
+    function onDeviceReady() {
+        //var db = window.openDatabase("test.db", "1.0", "Cordova Demo", 200000);
+        //db.transaction(populateDB, errorCB, successCB);
+        db1 = window.sqlitePlugin.openDatabase({name: "test.db"})
     };
-    //$scope.hide();
-  },function(){
-    //$scope.noMoreAvailable = true;
-    //$scope.hide();
-    //$scope.showAlert();
-  });
+  //console.log("db=====" + db);
+  $scope.getModule =function(){
+    //console.log("db=" + db);
+    //dbService.setup();
+    //dbService.getModule(supModule, module, subModule);
+    Folders.getFolderList(supModule, module, subModule).then(function(data){
+      $scope.modules = data;  
+      console.log(data);
+      if (data.length == 0) {
+        $scope.islastFolder = true;
+        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+            $scope.articles = data;  
+            if (data.length == 0) {
+              $scope.noMoreAvailable = true;
+            };
+            //$scope.hide();
+        },function(){
+            $scope.noMoreAvailable = true;
+            //$scope.hide();
+            //$scope.showAlert();
+        });
+      };
+      //$scope.hide();
+    });
+  };
+  $scope.getModule();
+  
   //console.log($scope.islastFolder);
 
   $scope.doRefresh = function(){
@@ -83,12 +103,27 @@ angular.module('starter.controllers', [])
 
   $scope.search = function(query){   
     //console.log('val=', query);  
-    var path = ''; 
-    ArticleService.search(query, supModule,module,subModule).then(function(data){
+    //var path = ''; 
+    if(query == ''){
       $scope.islastFolder = false;
+      return;
+    }
+    ArticleService.search(query, supModule,module,subModule).then(function(data){
+      
       $scope.articles = data;
+      if(data.length > 0){
+        $scope.islastFolder = true;
+      }else{
+        $scope.getModule();
+      }
+      console.log(data);
     });
   };
+
+  $scope.$on('$stateChangeSuccess', function() {
+    //console.log("change");
+    //$scope.getModule();
+  });
 })
 
 .controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, ArticleService) {
@@ -120,7 +155,7 @@ angular.module('starter.controllers', [])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
-  console.log($stateParams);
+  //console.log($stateParams);
   console.log('lawsCurrentPage='+ $rootScope.lawsCurrentPage);
 
   var supModule = $stateParams.supModuleName;
@@ -134,30 +169,32 @@ angular.module('starter.controllers', [])
   $scope.noMoreAvailable = false;
   $rootScope.lawsCurrentPage = 1;
 
-  Folders.getFolderList(supModule, module, subModule).then(function(data){
-    $scope.modules = data;  
-    console.log(data);
-    if (data.length == 0) {
-      $scope.islastFolder = true;
-      ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
-          $scope.articles = data;  
-          if (data.length == 0) {
+  $scope.getModule =function(){
+    Folders.getFolderList(supModule, module, subModule).then(function(data){
+      $scope.modules = data;  
+      console.log(data);
+      if (data.length == 0) {
+        $scope.islastFolder = true;
+        ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
+            $scope.articles = data;  
+            if (data.length == 0) {
+              $scope.noMoreAvailable = true;
+            };
+            //$scope.hide();
+        },function(){
             $scope.noMoreAvailable = true;
-          };
-          //$scope.hide();
-      },function(){
-          $scope.noMoreAvailable = true;
-          //$scope.hide();
-          //$scope.showAlert();
-      });
-    };
-    //$scope.hide();
-  },function(){
-    //$scope.noMoreAvailable = true;
-    //$scope.hide();
-    //$scope.showAlert();
-  });
-  //console.log($scope.islastFolder);
+            //$scope.hide();
+            //$scope.showAlert();
+        });
+      };
+      //$scope.hide();
+    },function(){
+      //$scope.noMoreAvailable = true;
+      //$scope.hide();
+      //$scope.showAlert();
+    });
+  };
+  $scope.getModule();
 
   $scope.doRefresh = function(){
     console.log("刷新");
@@ -202,20 +239,30 @@ angular.module('starter.controllers', [])
 
   $scope.search = function(query){   
     //console.log('val=', query);   
-     
-    ArticleService.search(query, supModule,module,subModule).then(function(data){
+    if(query == ''){
       $scope.islastFolder = false;
+      return;
+    }
+    ArticleService.search(query, supModule,module,subModule).then(function(data){
+      
       $scope.articles = data;
+      if(data.length > 0){
+        $scope.islastFolder = true;
+      }else{
+        $scope.getModule();
+      }
+      console.log(data);
     });
   };
 })
 
-.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicPopover, $timeout) {
+.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicPopover, $timeout,appConfig) {
   $scope.settings = {
     enableFriends: true
   };
 
   $scope.useCache = $rootScope.useCache;
+  $scope.versionName = appConfig.versionName;
 
    $scope.clean = function(){   
      var myPopup = $ionicPopup.show({
@@ -258,4 +305,8 @@ angular.module('starter.controllers', [])
   $scope.$on('$destroy', function() {
     $scope.popover.remove();
   });
+
+  $scope.logout = function() {
+    ionic.Platform.exitApp();
+  };
 });

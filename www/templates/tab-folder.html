@@ -30,16 +30,16 @@
         <ion-list >
           <ion-item  class="item-avatar" ng-repeat="article in articles" href="#/tab/articles/{{article.docid}}"
             collection-item-width="'100%'" >
-            <img ng-src="{{baseUrlImg}}/{{article.picture}}" ng-if="article.picture != null" reset-img>
+            <img ng-src="img/Wordpad.png">
             <!-- <img ng-src="img/jh_logo.jpg" ng-if="article.picture == ''" reset-img> -->
-            <h2><!-- <i class="ion-document-text"></i> --> {{article.tBt}}</h2>
+            <h2>{{article.tBt}}</h2>
             <!-- <p class="summary">
               <span class="tab">{{article.summary}}</span> 
             </p> -->
             <p class="summary">
               <!-- <span  class="tab hl">精华 &nbsp;&nbsp;|&nbsp;&nbsp;</span> -->
-              <span ><i class="icon ion-clipboard"></i>&nbsp;&nbsp; {{article.lm}}/{{article.sublm}}</span>
-              <span style="float:right;"><i class="ion-calendar"></i> {{article.tDate | date:'yyyy-MM-dd'}}</span>
+              <span ><i class="icon ion-clipboard"></i> {{article.lm}}<span ng-if="article.sublm">/{{article.sublm}}</span></span><br/>
+              <span style="float:left;"><i class="ion-calendar"></i> {{article.tDate | date:'yyyy-MM-dd'}}</span>
             </p>       
           </ion-item>
         </ion-list>
