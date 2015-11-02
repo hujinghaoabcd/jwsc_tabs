@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, Folders, ArticleService, dbService) {
+.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, Folders, ArticleService) {
   
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
   
@@ -138,11 +138,26 @@ angular.module('starter.controllers', [])
        });
   };
 
+  $scope.showServiceAlert = function() {
+       var alertPopup = $ionicPopup.alert({
+         title: '服务异常',
+         template: '服务异常！'
+       });
+       alertPopup.then(function(res) {
+         console.log(res);
+       });
+  };
+
   $scope.article = {};  
   ArticleService.getArticle().then(function(data){
     $scope.article = data;
-  },function(){
-      $scope.showAlert();
+  },function(err){
+      //alert(err);
+      if (err == "FAIL") {
+        $scope.showServiceAlert();
+      }else{
+        $scope.showAlert();
+      }     
     });
 })
 

@@ -67,8 +67,13 @@ angular.module('starter.services', [])
             'appId': appConfig.appId
         },
         cache: $rootScope.useCache
-       }).success(function (data) {
-        defer.resolve(data.result);
+       }).success(function (data) {        
+        if (data.status == "FAIL") {
+          console.log("doc/getDocById service return error code: "+ data.status);
+          defer.reject(data.status);
+        }else{
+          defer.resolve(data.result);
+        }
        }).error(function (err) {
         console.log("fail to http POST doc/getDocById");
         defer.reject(err);

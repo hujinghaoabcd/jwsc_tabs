@@ -7,7 +7,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
-        "url": "http://192.168.1.103:8080/appService",//后台服务地址
+        "url": "http://192.168.1.101:8080",//后台服务地址appService
         "port": "8080",
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
