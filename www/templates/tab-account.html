@@ -13,7 +13,7 @@
           </div>
         </label>
       </ion-item> -->
-      <ion-item class="item-icon-right" ng-click="">
+      <ion-item class="item-icon-right" ng-click="downloadData()">
         同步云端数据
         <i class="icon ion-android-download"></i>
       </ion-item>
@@ -24,7 +24,7 @@
       <ion-item class="item-divider">
         关于
       </ion-item>
-      <ion-item>
+      <ion-item ng-click="update()">
         当前版本
         <span class="item-note">
           {{versionName}}
@@ -48,7 +48,7 @@
       </ion-item>
     </ion-list>
     <div id="copyright" style="text-align:center;">
-      &copy; {{now | date:'yyyy'}} Benz Huang     
+      &copy; {{now | date:'yyyy'}} 上海百姓软件有限公司     
     </div>
   </ion-content>
 </ion-view>

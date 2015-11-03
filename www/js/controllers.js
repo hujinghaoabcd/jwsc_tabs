@@ -149,15 +149,20 @@ angular.module('starter.controllers', [])
   };
 
   $scope.article = {};  
+  $ionicLoading.show({
+      template: "正在加载..."
+  });
   ArticleService.getArticle().then(function(data){
     $scope.article = data;
+    $ionicLoading.hide(); 
   },function(err){
       //alert(err);
       if (err == "FAIL") {
         $scope.showServiceAlert();
       }else{
         $scope.showAlert();
-      }     
+      } 
+      $ionicLoading.hide();    
     });
 })
 
@@ -271,7 +276,7 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicPopover, $timeout,appConfig) {
+.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading, $ionicPopover, $timeout,appConfig) {
   $scope.settings = {
     enableFriends: true
   };
@@ -304,7 +309,7 @@ angular.module('starter.controllers', [])
   $scope.now = new Date();
 
   // .fromTemplate() method
-  var template = '<ion-popover-view style="height: 180px"><ion-content><ion-list><ion-item>客服：180-1868-3313</ion-item><ion-item>微信：Huang_Benz</ion-item><ion-item>QQ：419212048</ion-item></ion-list></ion-content></ion-popover-view>';
+  var template = '<ion-popover-view style="height: 50px"><ion-content><ion-list><ion-item>邮箱：vip@bxsoft.com</ion-item></ion-list></ion-content></ion-popover-view>';
 
   $scope.popover = $ionicPopover.fromTemplate(template, {
     scope: $scope
@@ -323,5 +328,37 @@ angular.module('starter.controllers', [])
 
   $scope.logout = function() {
     ionic.Platform.exitApp();
+  };
+
+  $scope.downloadData = function() {
+    var downloadPopup = $ionicPopup.show({
+      template: '正在研发...',
+      title: '同步云端数据'
+    });
+    downloadPopup.then(function(res) {
+      console.log('downloadData!'+ res);
+    });
+    $timeout(function() {
+      downloadPopup.close(); //close the popup after 3 seconds for some reason
+    }, 2000);
+  };
+
+  $scope.update = function() {
+    var updatePopup = $ionicPopup.show({
+      template: '正在检查...',
+      title: '检查版本'
+    });
+    updatePopup.then(function(res) {
+      $ionicLoading.show({
+        template: "已是最新版本"
+      });
+      console.log('update!'+ res);
+      $timeout(function() {
+        $ionicLoading.hide();
+      }, 1000);
+    });
+    $timeout(function() {
+      updatePopup.close(); //close the popup after 3 seconds for some reason
+    }, 2000);
   };
 });

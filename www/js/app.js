@@ -7,7 +7,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
-        "url": "http://192.168.1.101:8080",//后台服务地址appService
+        "url": "http://139.196.170.172:8080/appService",//后台服务地址appService
         "port": "8080",
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
@@ -88,7 +88,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     function updadeVersion(ver){
       var confirmPopup = $ionicPopup.confirm({
                 title: '版本升级',
-                template: '1.xxxx;</br>2.xxxxxx;</br>3.xxxxxx;</br>4.xxxxxx', //从服务端获取更新的内容
+                template: '1.修复缺陷；</br>2.新增功能；</br>3.优化程序，提高性能。', //从服务端获取更新的内容
                 cancelText: '取消',
                 okText: '升级'
             });
@@ -97,7 +97,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
                     $ionicLoading.show({
                         template: "已经下载：0%"
                     });
-                    var url = "http://192.168.1.103:8080/appService/resources/apk/jwsc.apk"; //可以从服务端获取更新APP的路径
+                    var url = "http://139.196.170.172:8080/appService/resources/apk/jwsc.apk"; //可以从服务端获取更新APP的路径
                     var targetPath = appConfig.targetPath; //APP下载存放的路径，可以使用cordova file插件进行相关配置
                     var trustHosts = true
                     var options = {};
