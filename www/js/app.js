@@ -59,6 +59,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
 
     cordova.getAppVersion.getVersionNumber(function (version) {
       console.log("varsion:" + version);
+      setVersionInfo(version);
       if(version != serverVersion){
         updadeVersion(version);
       }
@@ -80,12 +81,16 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     //记录登录日志
     LogsService.addLogin(myIMEI);
 
+    function setVersionInfo(ver){
+      $rootScope.versionName = ver;
+    };
     //数据库初始化
     //dbService.setup();
     //dbService.initTable();
     //dbService.getModule("执法工作手册", "111", "");
     //更新版本
     function updadeVersion(ver){
+      
       var confirmPopup = $ionicPopup.confirm({
                 title: '版本升级',
                 template: '1.修复缺陷；</br>2.新增功能；</br>3.优化程序，提高性能。', //从服务端获取更新的内容

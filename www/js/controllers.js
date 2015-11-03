@@ -21,15 +21,15 @@ angular.module('starter.controllers', [])
   /*$ionicPlatform.ready(function(){
     dbService.setup();
   });*/
-  document.addEventListener("deviceready", onDeviceReady, false);
+  //document.addEventListener("deviceready", onDeviceReady, false);
 
     // device APIs are available
     //
-    function onDeviceReady() {
+    //function onDeviceReady() {
         //var db = window.openDatabase("test.db", "1.0", "Cordova Demo", 200000);
         //db.transaction(populateDB, errorCB, successCB);
-        db1 = window.sqlitePlugin.openDatabase({name: "test.db"})
-    };
+        //db1 = window.sqlitePlugin.openDatabase({name: "test.db"})
+    //};
   //console.log("db=====" + db);
   $scope.getModule =function(){
     //console.log("db=" + db);
@@ -282,7 +282,8 @@ angular.module('starter.controllers', [])
   };
 
   $scope.useCache = $rootScope.useCache;
-  $scope.versionName = appConfig.versionName;
+  $scope.versionName = $rootScope.versionName;
+  console.log("$rootScope.versionName:" + $rootScope.versionName);
 
    $scope.clean = function(){   
      var myPopup = $ionicPopup.show({
