@@ -310,7 +310,7 @@ angular.module('starter.controllers', [])
   $scope.now = new Date();
 
   // .fromTemplate() method
-  var template = '<ion-popover-view style="height: 50px"><ion-content><ion-list><ion-item>邮箱：vip@bxsoft.com</ion-item></ion-list></ion-content></ion-popover-view>';
+  var template = '<ion-popover-view style="height: 50px"><ion-content><ion-list><ion-item>邮箱：vip@bxsoft.cn</ion-item></ion-list></ion-content></ion-popover-view>';
 
   $scope.popover = $ionicPopover.fromTemplate(template, {
     scope: $scope

@@ -120,6 +120,11 @@ angular.module('starter.services', [])
               'appId': appConfig.appId
           },
           cache: $rootScope.useCache
+        }).success(function (data){
+            defer.resolve(data.status);
+        }).error(function (err){
+          console.log("fail to http POST /log/insertLog");
+          defer.reject(err);
         });     
       return defer.promise;
     }
