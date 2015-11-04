@@ -5,7 +5,7 @@ angular.module('starter.services', [])
   return {
     /**获取分类列表**/
     getFolderList : function(supModule, module, subModule) {
-      
+
       var defer = $q.defer();
         $http({
           method: "post",
@@ -22,7 +22,7 @@ angular.module('starter.services', [])
         }).error(function(err){
           console.log("fail to http POST module/getModule");
           defer.reject(err);
-        });     
+        });
       return defer.promise;
     }
   };
@@ -32,7 +32,7 @@ angular.module('starter.services', [])
 
   //var pageNo = 1;
   var service = {    // our factory definition
-    
+
     /**获取列表**/
     getArticleList : function(supLm, lm, subLm, pageNo) {
       var defer = $q.defer();
@@ -51,7 +51,7 @@ angular.module('starter.services', [])
         }).error(function(err){
           console.log("fail to http POST doc/getListByPage");
           defer.reject(err);
-        });     
+        });
       return defer.promise;
     },
     /** 获取详细内容 **/
@@ -67,7 +67,7 @@ angular.module('starter.services', [])
             'appId': appConfig.appId
         },
         cache: $rootScope.useCache
-       }).success(function (data) {        
+       }).success(function (data) {
         if (data.status == "FAIL") {
           console.log("doc/getDocById service return error code: "+ data.status);
           defer.reject(data.status);
@@ -101,7 +101,7 @@ angular.module('starter.services', [])
       });
      return defer.promise;
     }
-  };  
+  };
   return service;
 })
 
@@ -125,7 +125,7 @@ angular.module('starter.services', [])
         }).error(function (err){
           console.log("fail to http POST /log/insertLog");
           defer.reject(err);
-        });     
+        });
       return defer.promise;
     }
   };
@@ -202,7 +202,7 @@ angular.module('starter.services', [])
     getDocListByModule : function(supModuleName, moduleName, subModuleName){
       var defer = $q.defer();
       var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where where suplm = ?"
-      if (moduleName=='' || moduleName = undefined) {
+      if (moduleName=='' || moduleName == undefined) {
         selectSql += " and lm = ?";
       };
       if (subModuleName =='' || subModuleName == undefined) {
@@ -211,7 +211,7 @@ angular.module('starter.services', [])
       selectSql += "order by docid desc limit 10 offset 0";
       $cordovaSQLite.execute(db, selectSql, [supModuleName, moduleName, subModuleName]).then(function(res) {
             if(res.rows.length > 0) {
-                console.log("SELECTED DocList-> " + res.rows.item(0).firstname + " " + res.rows.item(0).lastname);               
+                console.log("SELECTED DocList-> " + res.rows.item(0).firstname + " " + res.rows.item(0).lastname);
             } else {
                 console.log("DocList No results found");
             }
@@ -284,7 +284,7 @@ angular.module('starter.services', [])
       selectSql += "and tBt like ? order by tDate desc"
       $cordovaSQLite.execute(db, selectSql, [supModuleName, moduleName, subModuleName,val]).then(function(res) {
             if(res.rows.length > 0) {
-                console.log("SELECTED searchDocLst-> " + res.rows.item(0).firstname + " " + res.rows.item(0).lastname);               
+                console.log("SELECTED searchDocLst-> " + res.rows.item(0).firstname + " " + res.rows.item(0).lastname);
             } else {
                 console.log("DocList No results found");
             }
