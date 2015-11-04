@@ -275,7 +275,7 @@ angular.module('starter.services', [])
     searchDocLst : function(val,suplm,lm,sublm){
       var defer = $q.defer();
       var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where where suplm = ?"
-      if (moduleName=='' || moduleName = undefined) {
+      if (moduleName =='' || moduleName == undefined) {
         selectSql += " and lm = ?";
       };
       if (subModuleName =='' || subModuleName == undefined) {
