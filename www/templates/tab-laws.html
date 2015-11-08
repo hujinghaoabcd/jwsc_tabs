@@ -5,16 +5,16 @@
           <div class="item item-input-inset">
               <label class="item-input-wrapper" id="search-input">
                   <i class="icon ion-ios-search-strong placeholder-icon"></i>
-                  <input type="search" placeholder="Search" ng-model="query" ng-change="search(query)" 
+                  <input type="search" placeholder="Search" ng-model="query" ng-change="search(query)"
                   autocorrect="off">
               </label>
           </div>
     </div>
     <ion-list ng-if="!islastFolder">
         <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="module in modules" type="item-text-wrap" href="#/tab/laws/{{module.supModuleName}}/{{module.moduleName}}/{{module.subModuleName}}">
-          <img ng-src="img/jh_logo.jpg"> 
-          <div ng-if="!module.subModuleName"><h2>{{module.moduleName}}</h2></div>
-          <div ng-if="module.subModuleName"><h2>{{module.subModuleName}}</h2></div>
+          <img ng-src="img/jh_logo.jpg">
+          <div ng-if="!module.subModuleName"><h2 style="overflow: auto; text-overflow: clip;white-space:normal;">{{module.moduleName}}</h2></div>
+          <div ng-if="module.subModuleName"><h2 style="overflow: auto; text-overflow: clip;white-space:normal;">{{module.subModuleName}}</h2></div>
 
           <!-- <p>手册</p> -->
           <i class="icon ion-chevron-right icon-accessory"></i>
@@ -33,15 +33,16 @@
             collection-item-width="'100%'" >
             <img ng-src="img/Wordpad.png">
             <!-- <img ng-src="img/jh_logo.jpg" ng-if="article.picture == ''" reset-img> -->
-            <h2> {{article.tBt}}</h2>
+            <h2 style="overflow: auto; text-overflow: clip;white-space:normal;"> {{article.tBt}}</h2>
             <!-- <p class="summary">
-              <span class="tab">{{article.summary}}</span> 
+              <span class="tab">{{article.summary}}</span>
             </p> -->
-            
+
             <p class="summary">
-              <span ><i class="icon ion-clipboard"></i> {{article.lm}}<span ng-if="article.sublm">/{{article.sublm}}</span></span><br/>
-              <span style="float:left;"><i class="ion-calendar"></i> {{article.tDate |date:'yyyy-MM-dd'}}</span>
-            </p>       
+              <span ng-if="!searchFlag"><i class="icon ion-clipboard"></i> {{article.lm}}<span ng-if="article.sublm">/{{article.sublm}}</span></span>
+              <span ng-if="searchFlag" ng-bind-html="article.lm | to_trusted" style="overflow: auto; text-overflow: clip;white-space:normal;"></span>
+              <!-- <span style="float:left;"><i class="ion-calendar"></i> {{article.tDate |date:'yyyy-MM-dd'}}</span> -->
+            </p>
           </ion-item>
         </ion-list>
         <ion-infinite-scroll on-infinite="loadMore()" distance="10%" icon="ion-loading-c" ng-if="!noMoreAvailable">

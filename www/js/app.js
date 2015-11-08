@@ -15,12 +15,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         "targetPath":"file:///storage/sdcard0/Download/jwsc_update.apk"//下载文件地址
 })
 .run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$timeout,$cordovaFileTransfer, $cordovaFile, $cordovaFileOpener2,$cordovaSQLite,LogsService,appConfig) {
-  
+
   $ionicPlatform.ready(function() {
     $rootScope.folderCurrentPage = 1;
     $rootScope.lawsCurrentPage = 1;
     $rootScope.useCache = false;//是否使用缓存
-    
+
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
@@ -90,7 +90,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     //dbService.getModule("执法工作手册", "111", "");
     //更新版本
     function updadeVersion(ver){
-      
+
       var confirmPopup = $ionicPopup.confirm({
                 title: '版本升级',
                 template: '1.修复缺陷；</br>2.新增功能；</br>3.优化程序，提高性能。', //从服务端获取更新的内容
@@ -141,7 +141,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         title: 'appVersion'
       });*/
     };
-    
+
     /*$ionicPopup.show({
       template: "111",
       title: 'appVersion'
@@ -150,6 +150,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
   });
 })
 
+//.config(['$stateProvider','$urlRouterProvider', '$locationProvider', function($stateProvider, $urlRouterProvider, $locationProvider) {
 .config(function($stateProvider, $urlRouterProvider) {
 
   // Ionic uses AngularUI Router which uses the concept of states
@@ -227,5 +228,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/folder/执法工作手册//');
+  //$locationProvider.html5Mode(true);
 
 });

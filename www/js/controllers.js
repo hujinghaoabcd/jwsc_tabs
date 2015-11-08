@@ -1,10 +1,10 @@
 angular.module('starter.controllers', [])
 
-.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, Folders, ArticleService) {
-  
+.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, Folders, ArticleService) {
+
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
-  
-  
+
+
   //var defaultFatherId = $stateParams.folderId;
   $scope.islastFolder = false;
   //$scope.titleName = '';
@@ -36,12 +36,12 @@ angular.module('starter.controllers', [])
     //dbService.setup();
     //dbService.getModule(supModule, module, subModule);
     Folders.getFolderList(supModule, module, subModule).then(function(data){
-      $scope.modules = data;  
+      $scope.modules = data;
       console.log(data);
       if (data.length == 0) {
         $scope.islastFolder = true;
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
-            $scope.articles = data;  
+            $scope.articles = data;
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
             };
@@ -56,7 +56,7 @@ angular.module('starter.controllers', [])
     });
   };
   $scope.getModule();
-  
+
   //console.log($scope.islastFolder);
 
   $scope.doRefresh = function(){
@@ -68,8 +68,8 @@ angular.module('starter.controllers', [])
       $scope.articles = data;
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
-      }; 
-      //$scope.hide();    
+      };
+      //$scope.hide();
       $scope.$broadcast('scroll.refreshComplete');
     },function(){
       //$scope.hide();
@@ -90,7 +90,7 @@ angular.module('starter.controllers', [])
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
       };
-      //$scope.hide(); 
+      //$scope.hide();
       //console.log($scope.noMoreAvailable);
       $scope.$broadcast('scroll.infiniteScrollComplete');
     },function(){
@@ -101,16 +101,17 @@ angular.module('starter.controllers', [])
     });
   };
 
-  $scope.search = function(query){   
-    //console.log('val=', query);  
-    //var path = ''; 
+  $scope.search = function(query){
+    //console.log('val=', query);
+    //var path = '';
     if(query == ''){
       $scope.islastFolder = false;
       return;
     }
-    ArticleService.search(query, supModule,module,subModule).then(function(data){
-      
+    ArticleService.search(query).then(function(data){
+
       $scope.articles = data;
+      $scope.searchFlag = true;
       if(data.length > 0){
         $scope.islastFolder = true;
       }else{
@@ -125,6 +126,15 @@ angular.module('starter.controllers', [])
     //$scope.getModule();
   });
 })
+
+/**
+  * 转成标准的html格式
+  **/
+.filter('to_trusted', ['$sce', function($sce){
+    return function(text) {
+        return $sce.trustAsHtml(text);
+    };
+}])
 
 .controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, ArticleService) {
 
@@ -148,21 +158,21 @@ angular.module('starter.controllers', [])
        });
   };
 
-  $scope.article = {};  
+  $scope.article = {};
   $ionicLoading.show({
       template: "正在加载..."
   });
   ArticleService.getArticle().then(function(data){
     $scope.article = data;
-    $ionicLoading.hide(); 
+    $ionicLoading.hide();
   },function(err){
       //alert(err);
       if (err == "FAIL") {
         $scope.showServiceAlert();
       }else{
         $scope.showAlert();
-      } 
-      $ionicLoading.hide();    
+      }
+      $ionicLoading.hide();
     });
 })
 
@@ -191,12 +201,12 @@ angular.module('starter.controllers', [])
 
   $scope.getModule =function(){
     Folders.getFolderList(supModule, module, subModule).then(function(data){
-      $scope.modules = data;  
+      $scope.modules = data;
       console.log(data);
       if (data.length == 0) {
         $scope.islastFolder = true;
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
-            $scope.articles = data;  
+            $scope.articles = data;
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
             };
@@ -225,8 +235,8 @@ angular.module('starter.controllers', [])
       $scope.articles = data;
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
-      }; 
-      //$scope.hide();    
+      };
+      //$scope.hide();
       $scope.$broadcast('scroll.refreshComplete');
     },function(){
       //$scope.hide();
@@ -246,7 +256,7 @@ angular.module('starter.controllers', [])
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
       };
-      //$scope.hide(); 
+      //$scope.hide();
       //console.log($scope.noMoreAvailable);
       $scope.$broadcast('scroll.infiniteScrollComplete');
     },function(){
@@ -257,15 +267,16 @@ angular.module('starter.controllers', [])
     });
   };
 
-  $scope.search = function(query){   
-    //console.log('val=', query);   
+  $scope.search = function(query){
+    //console.log('val=', query);
     if(query == ''){
       $scope.islastFolder = false;
       return;
     }
-    ArticleService.search(query, supModule,module,subModule).then(function(data){
-      
+    ArticleService.search(query).then(function(data){
+
       $scope.articles = data;
+      $scope.searchFlag = true;
       if(data.length > 0){
         $scope.islastFolder = true;
       }else{
@@ -285,7 +296,7 @@ angular.module('starter.controllers', [])
   $scope.versionName = $rootScope.versionName;
   console.log("$rootScope.versionName:" + $rootScope.versionName);
 
-   $scope.clean = function(){   
+   $scope.clean = function(){
      var myPopup = $ionicPopup.show({
       template: '正在清除缓存...',
       title: '清除缓存'
