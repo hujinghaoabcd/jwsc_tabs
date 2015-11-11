@@ -7,14 +7,52 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
-        "url": "http://192.168.1.107:8080",//后台服务地址appService-http://139.196.170.172:8080/appService
+        //"url": "http://192.168.1.107:8080",//后台服务地址appService-http://139.196.170.172:8080/appService
+        "url": "http://192.168.1.107:8080",
         "port": "8080",
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\my.db",//数据库路径
         "targetPath":"file:///storage/sdcard0/Download/jwsc_update.apk"//下载文件地址
 })
-.run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$timeout,$cordovaFileTransfer, $cordovaFile, $cordovaFileOpener2,$cordovaSQLite,LogsService,appConfig) {
+.run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$location,$ionicHistory,$timeout,$cordovaFileTransfer, $cordovaFile, $cordovaFileOpener2,$cordovaSQLite,LogsService,appConfig) {
+
+    //主页面显示退出提示框  
+    $ionicPlatform.registerBackButtonAction(function (e) {  
+  
+        e.preventDefault();  
+
+        function showConfirm() {  
+            var confirmPopup = $ionicPopup.confirm({  
+                title: '<strong>退出应用</strong>',  
+                template: '你确定要退出应用吗？',  
+                okText: '退出',  
+                cancelText: '取消'  
+            });  
+
+            confirmPopup.then(function (res) {  
+                if (res) {  
+                    ionic.Platform.exitApp();  
+                } else {  
+                    // Don't close  
+                }  
+            });  
+        }  
+
+        // Is there a page to go back to?  
+        console.log($location.path());
+        if ($location.path() == '/tab' ) {
+            console.log("/tab");  
+            showConfirm();  
+        } else if ($ionicHistory.backView()) {    
+            $ionicHistory.goBack(-1);
+        } else {  
+            // This is the last page: Show confirmation popup  
+            showConfirm();  
+        }  
+
+        return false;  
+    }, 101);
 
   $ionicPlatform.ready(function() {
     $rootScope.folderCurrentPage = 1;

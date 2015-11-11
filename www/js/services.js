@@ -55,13 +55,13 @@ angular.module('starter.services', [])
       return defer.promise;
     },
     /** 获取详细内容 **/
-    getArticle :function(){
+    getArticle :function(lastPosition){
       console.log($stateParams.docid)
       var defer = $q.defer();
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':$stateParams.docid,'deviceId':'$rootScope.myIMEI'},
+        params: {'id':$stateParams.docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId

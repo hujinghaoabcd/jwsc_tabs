@@ -101,22 +101,39 @@ angular.module('starter.controllers', [])
     });
   };
 
-  $scope.search = function(query){
-    //console.log('val=', query);
-    //var path = '';
-    if(query == ''){
+  $scope.search = function($event,query){
+    console.log('search val=' + query);
+    if(query == undefined || query == ''){
       $scope.islastFolder = false;
+      if (subModule !== '') {//最后一级目录，直接加载文章
+        $scope.islastFolder = true;
+        $rootScope.folderCurrentPage = 1;
+        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+            $scope.articles = data;
+            if (data.length == 0) {
+              $scope.noMoreAvailable = true;
+            };
+        },function(){
+            $scope.noMoreAvailable = true;
+        });
+        return;
+      }
+      if (module !== '') {//二级目录
+        $rootScope.folderCurrentPage = 1;
+        $scope.getModule();
+        return;
+      }
       return;
     }
+    if ($event.keyCode !== 13) {//非搜索按钮，则返回
+      return;
+    };
     ArticleService.search(query).then(function(data){
 
       $scope.articles = data;
       $scope.searchFlag = true;
-      if(data.length > 0){
-        $scope.islastFolder = true;
-      }else{
-        $scope.getModule();
-      }
+
+      $scope.islastFolder = true;
       console.log(data);
     });
   };
@@ -138,6 +155,8 @@ angular.module('starter.controllers', [])
 
 .controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, ArticleService) {
 
+  $scope.lastPosition = "";
+  $scope.noMoreAvailable = false;
   $scope.showAlert = function() {
        var alertPopup = $ionicPopup.alert({
          title: '网络异常',
@@ -158,22 +177,52 @@ angular.module('starter.controllers', [])
        });
   };
 
-  $scope.article = {};
+  //$scope.article = {};
   $ionicLoading.show({
       template: "正在加载..."
   });
-  ArticleService.getArticle().then(function(data){
-    $scope.article = data;
+  ArticleService.getArticle($scope.lastPosition).then(function(data){
+    //$scope.article = data;
+    console.log(data.lastPosition);
+    $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
+    if ($scope.lastPosition !== 'end') {
+        $scope.loadMore($scope.lastPosition);
+    };
   },function(err){
-      //alert(err);
       if (err == "FAIL") {
         $scope.showServiceAlert();
       }else{
         $scope.showAlert();
       }
       $ionicLoading.hide();
+  });
+
+  $scope.loadMore = function(){
+    console.log("--loadMore--" + $scope.lastPosition);
+    //alert($scope.lastPosition);
+    ArticleService.getArticle($scope.lastPosition).then(function(data){
+      //console.log($scope.article.tBt);
+      console.log(data.tZw.length);
+
+      //$scope.article = $scope.article.concat(data);
+      console.log(data.lastPosition);
+      $scope.lastPosition = data.lastPosition;
+      //$ionicLoading.hide();
+      //$scope.$broadcast('scroll.infiniteScrollComplete');
+      if ($scope.lastPosition !== 'end') {
+        $scope.loadMore($scope.lastPosition);
+      };
+    },function(err){
+        if (err == "FAIL") {
+          $scope.showServiceAlert();
+        }else{
+          $scope.showAlert();
+        }
+        $ionicLoading.hide();
     });
+
+  };
 })
 
 
@@ -267,21 +316,40 @@ angular.module('starter.controllers', [])
     });
   };
 
-  $scope.search = function(query){
+  $scope.search = function($event,query){
     //console.log('val=', query);
-    if(query == ''){
+    console.log('laws search val=', query);
+    if(query == undefined || query == ''){
       $scope.islastFolder = false;
+      if (subModule !== '') {//最后一级目录，直接加载文章
+        $scope.islastFolder = true;
+        $rootScope.folderCurrentPage = 1;
+        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+            $scope.articles = data;
+            if (data.length == 0) {
+              $scope.noMoreAvailable = true;
+            };
+        },function(){
+            $scope.noMoreAvailable = true;
+        });
+        return;
+      }
+      if (module !== '') {//二级目录
+        $rootScope.folderCurrentPage = 1;
+        $scope.getModule();
+        return;
+      }
       return;
     }
+    if ($event.keyCode !== 13) {//非搜索按钮，则返回
+      return;
+    };
     ArticleService.search(query).then(function(data){
 
       $scope.articles = data;
       $scope.searchFlag = true;
-      if(data.length > 0){
-        $scope.islastFolder = true;
-      }else{
-        $scope.getModule();
-      }
+
+      $scope.islastFolder = true;
       console.log(data);
     });
   };
