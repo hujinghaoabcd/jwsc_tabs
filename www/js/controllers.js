@@ -182,7 +182,7 @@ angular.module('starter.controllers', [])
       template: "正在加载..."
   });
   ArticleService.getArticle($scope.lastPosition).then(function(data){
-    //$scope.article = data;
+    $scope.article = data;
     console.log(data.lastPosition);
     $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
