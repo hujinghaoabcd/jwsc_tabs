@@ -186,7 +186,7 @@ angular.module('starter.controllers', [])
     console.log(data.lastPosition);
     $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
-    if ($scope.lastPosition !== 'end') {
+    if ($scope.lastPosition !== '-1') {
         $scope.loadMore($scope.lastPosition);
     };
   },function(err){
@@ -204,13 +204,13 @@ angular.module('starter.controllers', [])
     ArticleService.getArticle($scope.lastPosition).then(function(data){
       //console.log($scope.article.tBt);
       console.log(data.tZw.length);
-
+      $scope.article.tZw.concat(data.tZw);
       //$scope.article = $scope.article.concat(data);
       console.log(data.lastPosition);
       $scope.lastPosition = data.lastPosition;
       //$ionicLoading.hide();
       //$scope.$broadcast('scroll.infiniteScrollComplete');
-      if ($scope.lastPosition !== 'end') {
+      if ($scope.lastPosition !== '-1') {
         $scope.loadMore($scope.lastPosition);
       };
     },function(err){
