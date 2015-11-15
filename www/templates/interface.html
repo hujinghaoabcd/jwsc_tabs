@@ -1,0 +1,25 @@
+<ion-view view-title="接口测试">
+  <ion-content>    
+	<p>
+		<button class="button button-positive" ng-click="getModule()">文书分类接口</button>
+	</p>
+	<p>
+      	<button class="button button-calm" ng-click="getArticleList()">文书列表接口</button>
+      	<button class="button button-royal" ng-click="getDoc()">文书内容接口</button>
+    </p>
+    <p>
+      	<button class="button button-balanced" ng-click="savelog()">日志接口</button>
+      	<button class="button button-energized" ng-click="testSearch()">搜索接口</button>
+    </p>
+    <p>
+      	<button class="button button-assertive" ng-click="testUpdate()">更新接口</button>
+    </p>
+    <p>
+    	<label>返回结果：</label><br>
+    	<span>状态：{{status}}</span><br>
+    	<span>错误信息：{{errorMsg}}</span><br>
+    	<span>详情：{{result}}</span>
+    </p>
+    
+  </ion-content>
+</ion-view>
