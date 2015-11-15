@@ -61,7 +61,7 @@ angular.module('starter.services', [])
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':$stateParams.docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
+        params: {'id':$stateParams.docid,'deviceId':$rootScope.myIMEI,'lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId
@@ -129,4 +129,30 @@ angular.module('starter.services', [])
       return defer.promise;
     }
   };
-});
+})
+
+.factory('UpdateService',function($q, $http,$rootScope,$stateParams,appConfig){
+
+  return {
+    /**更新**/
+    updateApp : function() {
+      var defer = $q.defer();
+        $http({
+          method: "post",
+          url: appConfig.url + "/update",
+          params: {'version':$rootScope.versionName},
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'appId': appConfig.appId
+          },
+          cache: $rootScope.useCache
+        }).success(function (data){
+            defer.resolve(data);
+        }).error(function (err){
+          console.log("fail to http POST /update");
+          defer.reject(err);
+        });
+      return defer.promise;
+    }
+  };
+});;

@@ -1,5 +1,17 @@
 angular.module('starter.controllers', [])
 
+.controller('TabCtrl',function($scope,$ionicTabsDelegate){
+
+  $scope.onFolderSelect = function(index){
+    $ionicTabsDelegate.select(index);
+  }
+
+  $scope.onLawsSelect = function(index){
+    $ionicTabsDelegate.select(index);
+  }
+
+})
+
 .controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, Folders, ArticleService) {
 
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
@@ -15,6 +27,7 @@ angular.module('starter.controllers', [])
 
   var module = $stateParams.moduleName;
   var subModule = $stateParams.subModuleName;
+  $rootScope.supModule = supModule;//用于选择tab的时候返回目录
   console.log('supModule='+ supModule + '. module='+ module + '. subModule='+ subModule);
 
   //var db1；
@@ -35,13 +48,15 @@ angular.module('starter.controllers', [])
     //console.log("db=" + db);
     //dbService.setup();
     //dbService.getModule(supModule, module, subModule);
+    console.log(supModule + "---" +module + "---" +subModule);
     Folders.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
-      console.log(data);
+      console.log("modulesData=" + data);
       if (data.length == 0) {
         $scope.islastFolder = true;
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
+            console.log("articlesData=" + data);
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
             };
@@ -57,26 +72,30 @@ angular.module('starter.controllers', [])
   };
   $scope.getModule();
 
-  //console.log($scope.islastFolder);
-
   $scope.doRefresh = function(){
     console.log("刷新");
     //$scope.show();
+    console.log("searchFlag=" + $scope.searchFlag)
+    if ($scope.searchFlag) {
+      //$scope.noMoreAvailable = true;
+      $scope.$broadcast('scroll.refreshComplete');
+      return;
+    };
+    console.log("1");
     $rootScope.folderCurrentPage = 1;
     $scope.noMoreAvailable = false;
-    ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data) {
-      $scope.articles = data;
+    $scope.getModule();
+    /*ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data) {
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
       };
-      //$scope.hide();
-      $scope.$broadcast('scroll.refreshComplete');
+      console.log(data.length);
+      console.log("1");
     },function(){
-      //$scope.hide();
-      //$scope.showAlert();
+      console.log("2");
       $scope.noMoreAvailable = true;
-      $scope.$broadcast('scroll.refreshComplete');
-    });
+    });*/
+    $scope.$broadcast('scroll.refreshComplete');
   };
 
   $scope.loadMore = function(){
@@ -104,9 +123,11 @@ angular.module('starter.controllers', [])
   $scope.search = function($event,query){
     console.log('search val=' + query);
     if(query == undefined || query == ''){
+      $scope.searchFlag = false;
       $scope.islastFolder = false;
       if (subModule !== '') {//最后一级目录，直接加载文章
         $scope.islastFolder = true;
+
         $rootScope.folderCurrentPage = 1;
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
@@ -139,7 +160,7 @@ angular.module('starter.controllers', [])
   };
 
   $scope.$on('$stateChangeSuccess', function() {
-    //console.log("change");
+    //console.log("foler change");
     //$scope.getModule();
   });
 })
@@ -186,7 +207,7 @@ angular.module('starter.controllers', [])
     console.log(data.lastPosition);
     $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
-    if ($scope.lastPosition !== '-1') {
+    if ($scope.lastPosition !== -1) {
         $scope.loadMore($scope.lastPosition);
     };
   },function(err){
@@ -203,14 +224,11 @@ angular.module('starter.controllers', [])
     //alert($scope.lastPosition);
     ArticleService.getArticle($scope.lastPosition).then(function(data){
       //console.log($scope.article.tBt);
-      console.log(data.tZw.length);
-      $scope.article.tZw.concat(data.tZw);
-      //$scope.article = $scope.article.concat(data);
+      //console.log(data.tZw.length);
+      $scope.article.tZw += data.tZw;
       console.log(data.lastPosition);
       $scope.lastPosition = data.lastPosition;
-      //$ionicLoading.hide();
-      //$scope.$broadcast('scroll.infiniteScrollComplete');
-      if ($scope.lastPosition !== '-1') {
+      if ($scope.lastPosition !== -1) {
         $scope.loadMore($scope.lastPosition);
       };
     },function(err){
@@ -242,9 +260,7 @@ angular.module('starter.controllers', [])
   var module = $stateParams.moduleName;
   var subModule = $stateParams.subModuleName;
 
-  //var defaultFatherId = '';
   $scope.islastFolder = false;
-  //$scope.titleName = '';
   $scope.noMoreAvailable = false;
   $rootScope.lawsCurrentPage = 1;
 
@@ -278,21 +294,27 @@ angular.module('starter.controllers', [])
   $scope.doRefresh = function(){
     console.log("刷新");
     //$scope.show();
+    console.log($scope.searchFlag);
+    if ($scope.searchFlag) {
+      //$scope.noMoreAvailable = true;
+      $scope.$broadcast('scroll.refreshComplete');
+      return;
+    };
     $rootScope.lawsCurrentPage = 1;
     $scope.noMoreAvailable = false;
-    ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data) {
+    $scope.getModule();
+    /*ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data) {
       $scope.articles = data;
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
       };
-      //$scope.hide();
-      $scope.$broadcast('scroll.refreshComplete');
+      
     },function(){
       //$scope.hide();
       //$scope.showAlert();
       $scope.noMoreAvailable = true;
-      $scope.$broadcast('scroll.refreshComplete');
-    });
+    });*/
+    $scope.$broadcast('scroll.refreshComplete');
   };
 
   $scope.loadMore = function(){
@@ -317,9 +339,9 @@ angular.module('starter.controllers', [])
   };
 
   $scope.search = function($event,query){
-    //console.log('val=', query);
     console.log('laws search val=', query);
     if(query == undefined || query == ''){
+      $scope.searchFlag = false;
       $scope.islastFolder = false;
       if (subModule !== '') {//最后一级目录，直接加载文章
         $scope.islastFolder = true;
@@ -353,6 +375,11 @@ angular.module('starter.controllers', [])
       console.log(data);
     });
   };
+
+  $scope.$on('$stateChangeSuccess', function() {
+    //console.log("laws change");
+    //$scope.getModule();
+  });
 })
 
 .controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading, $ionicPopover, $timeout,appConfig) {
@@ -371,6 +398,7 @@ angular.module('starter.controllers', [])
     });
     myPopup.then(function(res) {
       console.log('clean!', res);
+      window.localStorage.clear();
     });
     $timeout(function() {
       myPopup.close(); //close the popup after 3 seconds for some reason
@@ -406,11 +434,29 @@ angular.module('starter.controllers', [])
     $scope.popover.remove();
   });
 
+  function confirmPopup(){
+    var confirmPopup = $ionicPopup.confirm({  
+        title: '<strong>退出应用</strong>',  
+        template: '你确定要退出应用吗？',  
+        okText: '退出',  
+        cancelText: '取消'  
+    });  
+
+    confirmPopup.then(function (res) {  
+        if (res) {  
+            ionic.Platform.exitApp();  
+        } else {  
+            // Don't close  
+        }  
+    });
+  }
   $scope.logout = function() {
-    ionic.Platform.exitApp();
+    //ionic.Platform.exitApp();
+    confirmPopup();
   };
 
   $scope.downloadData = function() {
+    //TODO
     var downloadPopup = $ionicPopup.show({
       template: '正在研发...',
       title: '同步云端数据'
@@ -424,6 +470,7 @@ angular.module('starter.controllers', [])
   };
 
   $scope.update = function() {
+    //TODO
     var updatePopup = $ionicPopup.show({
       template: '正在检查...',
       title: '检查版本'
@@ -441,4 +488,89 @@ angular.module('starter.controllers', [])
       updatePopup.close(); //close the popup after 3 seconds for some reason
     }, 2000);
   };
+})
+
+.controller('InterfaceCtrl',function($scope,Folders,ArticleService,LogsService,UpdateService){
+
+  $scope.getModule = function(){
+    //$ionicTabsDelegate.select(index);
+    Folders.getFolderList("执法工作手册", "", "").then(function(data){
+      $scope.result = data;
+      $scope.status = data.status;
+      $scope.errorMsg = data.message;
+      console.log("modulesData=" + data);
+      //$scope.hide();
+    },function(err){
+      $scope.result = err;
+    });
+  };
+
+  $scope.getArticleList = function(){
+    //$ionicTabsDelegate.select(index);
+    ArticleService.getArticleList("执法工作手册","社区民警执法手册","", 1).then(function(data){
+            $scope.result = data;
+            $scope.status = data.status;
+            $scope.errorMsg = data.message;
+            console.log("articlesData=" + data);
+            
+            //$scope.hide();
+        },function(err){
+            $scope.result = err;
+    });
+  };
+
+  $scope.getDoc = function(){
+    //$ionicTabsDelegate.select(index);
+    ArticleService.getArticle("").then(function(data){
+          $scope.result = data;
+          $scope.status = data.status;
+          $scope.errorMsg = data.message;
+          console.log("articleData=" + data);
+            
+          //$scope.hide();
+        },function(err){
+            $scope.result = err;
+    });
+  };
+
+  $scope.savelog = function(){
+    //$ionicTabsDelegate.select(index);
+    LogsService.addLogin("testInterface").then(function(data){
+        $scope.result = data;
+        $scope.status = data.status;
+        $scope.errorMsg = data.message;
+        console.log("logs=" + data);
+            
+            //$scope.hide();
+        },function(err){
+            $scope.result = err;
+    });
+  };
+
+  $scope.testSearch = function(){
+    //$ionicTabsDelegate.select(index);
+    ArticleService.search("执法").then(function(data){
+
+      $scope.result = data;
+      $scope.status = data.status;
+      $scope.errorMsg = data.message;
+      console.log(data);
+    },function(err){
+      $scope.result = err;
+    });
+  };
+
+  $scope.testUpdate = function(){
+    //$ionicTabsDelegate.select(index);
+    UpdateService.updateApp().then(function(data){
+
+      $scope.result = data;
+      $scope.status = data.status;
+      $scope.errorMsg = data.message;
+      console.log("update=" + data);
+    },function(err){
+      $scope.result = err;
+    });
+  };
+
 });

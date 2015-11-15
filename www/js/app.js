@@ -7,8 +7,9 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
-        //"url": "http://192.168.1.107:8080",//后台服务地址appService-http://139.196.170.172:8080/appService
-        "url": "http://192.168.1.107:8080",
+        "url": "http://139.196.170.172:8080/jwscapi",//后台服务地址appService-
+        //"url": "http://192.168.1.107:8080",
+        //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
         "port": "8080",
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
@@ -41,7 +42,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
 
         // Is there a page to go back to?  
         console.log($location.path());
-        if ($location.path() == '/tab' ) {
+        if ($location.path() == '/tab/' ) {
             console.log("/tab");  
             showConfirm();  
         } else if ($ionicHistory.backView()) {    
@@ -140,7 +141,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
                     $ionicLoading.show({
                         template: "已经下载：0%"
                     });
-                    var url = "http://139.196.170.172:8080/appService/resources/apk/jwsc.apk"; //可以从服务端获取更新APP的路径
+                    var url = appConfig.url + "/resources/apk/jwsc.apk"; //可以从服务端获取更新APP的路径
                     var targetPath = appConfig.targetPath; //APP下载存放的路径，可以使用cordova file插件进行相关配置
                     var trustHosts = true
                     var options = {};
@@ -201,7 +202,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     .state('tab', {
     url: '/tab',
     abstract: true,
-    templateUrl: 'templates/tabs.html'
+    templateUrl: 'templates/tabs.html',
+    controller: 'TabCtrl'
   })
 
   // Each tab has its own nav history stack:
@@ -260,6 +262,16 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     views: {
       'tab-account': {
         templateUrl: 'templates/us.html'
+      }
+    }
+  })
+
+  .state('tab.interface', {
+    url: '/interface',
+    views: {
+      'tab-account': {
+        templateUrl: 'templates/interface.html',
+        controller:'InterfaceCtrl'
       }
     }
   });

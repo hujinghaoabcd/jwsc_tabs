@@ -1,5 +1,5 @@
 <ion-view view-title="常用法律法规">
-  <ion-nav-back-button>返回</ion-nav-back-button>
+  <!-- <ion-nav-back-button>返回</ion-nav-back-button> -->
   <ion-content>
       <div id="search-bar">
           <div class="item item-input-inset">
@@ -10,6 +10,8 @@
               </label>
           </div>
     </div>
+    <ion-refresher pulling-text="下拉刷新..." pulling-icon="ion-android-arrow-down" on-refresh="doRefresh()" refreshing-text="刷新成功" refreshing-icon="ion-loading-c">
+    </ion-refresher>
     <ion-list ng-if="!islastFolder">
         <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="module in modules" type="item-text-wrap" href="#/tab/laws/{{module.supModuleName}}/{{module.moduleName}}/{{module.subModuleName}}">
           <img ng-src="img/jh_logo.jpg">
@@ -21,17 +23,11 @@
         </ion-item>
     </ion-list>
     <div class="list" ng-if="islastFolder">
-      <ion-refresher pulling-text="下拉刷新..." on-refresh="doRefresh()" refreshing-text="刷新成功" refreshing-icon="ion-loading-c">
-        <!-- ng-if="articleIds.length > 0" -->
-        </ion-refresher>
         <ion-list >
           <ion-item  class="item-avatar" ng-repeat="article in articles" href="#/tab/lawsArticle/{{article.docid}}"
             collection-item-width="'100%'" >
             <img ng-src="img/Wordpad.png">
             <h2 style="overflow: auto; text-overflow: clip;white-space:normal;"> {{article.tBt}}</h2>
-            <!-- <p class="summary">
-              <span class="tab">{{article.summary}}</span>
-            </p> -->
 
             <p class="summary">
               <span ng-if="!searchFlag"><i class="icon ion-clipboard"></i> {{article.lm}}<span ng-if="article.sublm">/{{article.sublm}}</span></span>
@@ -41,7 +37,6 @@
           </ion-item>
         </ion-list>
         <ion-infinite-scroll on-infinite="loadMore()" distance="10%" icon="ion-loading-c" ng-if="!noMoreAvailable">
-        <!-- ng-if="noMoreAvailable"-->
         </ion-infinite-scroll>
     </div>
   </ion-content>
