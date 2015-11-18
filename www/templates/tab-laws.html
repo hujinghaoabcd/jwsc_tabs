@@ -5,9 +5,10 @@
           <div class="item item-input-inset">
               <label class="item-input-wrapper" id="search-input">
                   <i class="icon ion-ios-search-strong placeholder-icon"></i>
-                  <input type="search" placeholder="搜索" ng-model="query" ng-keypress="search($event,query)"
+                  <input type="search" placeholder="搜索" ng-model="searchData.query" ng-keypress="search($event)" ng-focus="focus()" ng-blur="onblur()"
                   autocorrect="off">
               </label>
+              <button class="button button-clear" ng-click="clearSearch()" ng-if="isCleanButton">取消</button>
           </div>
     </div>
     <ion-refresher pulling-text="下拉刷新..." pulling-icon="ion-android-arrow-down" on-refresh="doRefresh()" refreshing-text="刷新成功" refreshing-icon="ion-loading-c">

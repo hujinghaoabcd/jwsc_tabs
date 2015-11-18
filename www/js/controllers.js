@@ -3,11 +3,29 @@ angular.module('starter.controllers', [])
 .controller('TabCtrl',function($scope,$ionicTabsDelegate){
 
   $scope.onFolderSelect = function(index){
-    $ionicTabsDelegate.select(index);
+    /*console.log(this);
+    console.log(this.title);
+    console.log(this.href);
+    console.log(this.$$childHead);
+    console.log(this.child);*/
+    /*alert($rootScope.query);
+    if ($rootScope.query == undefined) {
+      return;
+    };*/
+    //$ionicHistory.goBack(-1);
+    //$scope.islastFolder = false;
+    //$urlRouterProvider.otherwise('/tab/folder/执法工作手册//');
+    //$ionicTabsDelegate.select(index);
+    //window.location.reload(true);
+  }
+
+  $scope.onTabDeselected = function(){
+    //console.log(this);
+    //window.location.reload(true);
   }
 
   $scope.onLawsSelect = function(index){
-    $ionicTabsDelegate.select(index);
+    //$ionicTabsDelegate.select(index);
   }
 
 })
@@ -15,7 +33,6 @@ angular.module('starter.controllers', [])
 .controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, Folders, ArticleService) {
 
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
-
 
   //var defaultFatherId = $stateParams.folderId;
   $scope.islastFolder = false;
@@ -48,7 +65,9 @@ angular.module('starter.controllers', [])
     //console.log("db=" + db);
     //dbService.setup();
     //dbService.getModule(supModule, module, subModule);
-    console.log(supModule + "---" +module + "---" +subModule);
+    //console.log("$scope.query=" + $scope.query);
+    //$scope.query = "111";
+    //console.log(supModule + "---" +module + "---" +subModule);
     Folders.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
       console.log("modulesData=" + data);
@@ -56,7 +75,7 @@ angular.module('starter.controllers', [])
         $scope.islastFolder = true;
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
-            console.log("articlesData=" + data);
+            //console.log("articlesData=" + data);
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
             };
@@ -73,15 +92,15 @@ angular.module('starter.controllers', [])
   $scope.getModule();
 
   $scope.doRefresh = function(){
-    console.log("刷新");
+    //console.log("刷新");
     //$scope.show();
-    console.log("searchFlag=" + $scope.searchFlag)
+    //console.log("searchFlag=" + $scope.searchFlag)
     if ($scope.searchFlag) {
       //$scope.noMoreAvailable = true;
       $scope.$broadcast('scroll.refreshComplete');
       return;
     };
-    console.log("1");
+    //console.log("1");
     $rootScope.folderCurrentPage = 1;
     $scope.noMoreAvailable = false;
     $scope.getModule();
@@ -99,7 +118,7 @@ angular.module('starter.controllers', [])
   };
 
   $scope.loadMore = function(){
-    console.log("下一页");
+    //console.log("下一页");
     //$scope.show();
     var currentPage = $rootScope.folderCurrentPage;
     $rootScope.folderCurrentPage =  currentPage + 1;
@@ -120,9 +139,10 @@ angular.module('starter.controllers', [])
     });
   };
 
-  $scope.search = function($event,query){
-    console.log('search val=' + query);
-    if(query == undefined || query == ''){
+  $scope.searchData = {'query':''};
+  $scope.search = function($event){
+    //console.log('search val=' + $scope.searchData.query);
+    if($scope.searchData.query == undefined || $scope.searchData.query == ''){
       $scope.searchFlag = false;
       $scope.islastFolder = false;
       if (subModule !== '') {//最后一级目录，直接加载文章
@@ -149,18 +169,71 @@ angular.module('starter.controllers', [])
     if ($event.keyCode !== 13) {//非搜索按钮，则返回
       return;
     };
-    ArticleService.search(query).then(function(data){
+    ArticleService.search($scope.searchData.query).then(function(data){
 
       $scope.articles = data;
       $scope.searchFlag = true;
 
       $scope.islastFolder = true;
-      console.log(data);
+      //console.log(data);
     });
+    //$rootScope.query= query;
   };
 
-  $scope.$on('$stateChangeSuccess', function() {
+  
+  $scope.isCleanButton = false;
+  $scope.focus = function(){
+    $scope.isCleanButton = true;
+    $scope.islastFolder = false;
+    $scope.searchFlag = false;
+  };
+
+  $scope.onblur = function(){
+    //$scope.isCleanButton = false;
+    //$scope.searchData.query = "";
+  };
+
+  $scope.clearSearch = function(){
+    $scope.isCleanButton = false;
+    $scope.islastFolder = false;
+    $scope.searchFlag = false;
+    $scope.searchData.query = "";
+    //$scope.getModule();
+    if (subModule !== '') {//最后一级目录，直接加载文章
+        $scope.islastFolder = true;
+
+        $rootScope.folderCurrentPage = 1;
+        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+            $scope.articles = data;
+            if (data.length == 0) {
+              $scope.noMoreAvailable = true;
+            };
+        },function(){
+            $scope.noMoreAvailable = true;
+        });
+        return;
+      }
+      if (module !== '') {//二级目录
+        $rootScope.folderCurrentPage = 1;
+        $scope.getModule();
+        return;
+      }
+    //console.log("query="+$scope.searchData.query);
+  };
+
+  $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
     //console.log("foler change");
+    //console.log(toState);
+    //console.log(toParams);
+    //console.log(fromState);
+    //console.log(fromParams);
+    //$scope.query = "222";
+    console.log("foler stateChangeSuccess");
+    //$scope.islastFolder = false;
+    //$scope.searchFlag = false;
+    //supModule = "执法工作手册";
+    //module = ""; 
+    //subModule = "";
     //$scope.getModule();
   });
 })
@@ -184,7 +257,7 @@ angular.module('starter.controllers', [])
          template: '请检查你的网络！'
        });
        alertPopup.then(function(res) {
-         console.log(res);
+         //console.log(res);
        });
   };
 
@@ -204,7 +277,7 @@ angular.module('starter.controllers', [])
   });
   ArticleService.getArticle($scope.lastPosition).then(function(data){
     $scope.article = data;
-    console.log(data.lastPosition);
+    //console.log(data.lastPosition);
     $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
     if ($scope.lastPosition !== -1) {
@@ -220,13 +293,13 @@ angular.module('starter.controllers', [])
   });
 
   $scope.loadMore = function(){
-    console.log("--loadMore--" + $scope.lastPosition);
+    //console.log("--loadMore--" + $scope.lastPosition);
     //alert($scope.lastPosition);
     ArticleService.getArticle($scope.lastPosition).then(function(data){
       //console.log($scope.article.tBt);
       //console.log(data.tZw.length);
       $scope.article.tZw += data.tZw;
-      console.log(data.lastPosition);
+      //console.log(data.lastPosition);
       $scope.lastPosition = data.lastPosition;
       if ($scope.lastPosition !== -1) {
         $scope.loadMore($scope.lastPosition);
@@ -253,7 +326,7 @@ angular.module('starter.controllers', [])
   //$scope.$on('$ionicView.enter', function(e) {
   //});
   //console.log($stateParams);
-  console.log('lawsCurrentPage='+ $rootScope.lawsCurrentPage);
+  //console.log('lawsCurrentPage='+ $rootScope.lawsCurrentPage);
 
   var supModule = $stateParams.supModuleName;
 
@@ -265,11 +338,14 @@ angular.module('starter.controllers', [])
   $rootScope.lawsCurrentPage = 1;
 
   $scope.getModule =function(){
+    //console.log("111111111--"+ supModule + "---" +module + "---" +subModule);
     Folders.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
-      console.log(data);
+      //console.log(data);
+      //console.log(data.length);
       if (data.length == 0) {
         $scope.islastFolder = true;
+        //console.log('lawsCurrentPage='+ $rootScope.lawsCurrentPage);
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
             $scope.articles = data;
             if (data.length == 0) {
@@ -292,9 +368,9 @@ angular.module('starter.controllers', [])
   $scope.getModule();
 
   $scope.doRefresh = function(){
-    console.log("刷新");
+    //console.log("刷新");
     //$scope.show();
-    console.log($scope.searchFlag);
+    //console.log($scope.searchFlag);
     if ($scope.searchFlag) {
       //$scope.noMoreAvailable = true;
       $scope.$broadcast('scroll.refreshComplete');
@@ -318,7 +394,7 @@ angular.module('starter.controllers', [])
   };
 
   $scope.loadMore = function(){
-    console.log("下一页");
+    //console.log("下一页");
     //$scope.show();
     var currentPage = $rootScope.lawsCurrentPage;
     $rootScope.lawsCurrentPage =  currentPage + 1;
@@ -338,15 +414,16 @@ angular.module('starter.controllers', [])
     });
   };
 
-  $scope.search = function($event,query){
-    console.log('laws search val=', query);
-    if(query == undefined || query == ''){
+  $scope.searchData = {'query':''};
+  $scope.search = function($event){
+    //console.log('laws search val=', $scope.searchData.query);
+    if($scope.searchData.query == undefined || $scope.searchData.query == ''){
       $scope.searchFlag = false;
       $scope.islastFolder = false;
       if (subModule !== '') {//最后一级目录，直接加载文章
         $scope.islastFolder = true;
-        $rootScope.folderCurrentPage = 1;
-        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+        $rootScope.lawsCurrentPage = 1;
+        ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
             $scope.articles = data;
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
@@ -357,7 +434,7 @@ angular.module('starter.controllers', [])
         return;
       }
       if (module !== '') {//二级目录
-        $rootScope.folderCurrentPage = 1;
+        $rootScope.lawsCurrentPage = 1;
         $scope.getModule();
         return;
       }
@@ -366,18 +443,60 @@ angular.module('starter.controllers', [])
     if ($event.keyCode !== 13) {//非搜索按钮，则返回
       return;
     };
-    ArticleService.search(query).then(function(data){
+    ArticleService.search($scope.searchData.query).then(function(data){
 
       $scope.articles = data;
       $scope.searchFlag = true;
 
       $scope.islastFolder = true;
-      console.log(data);
+      //console.log(data);
     });
   };
 
+  $scope.isCleanButton = false;
+  $scope.focus = function(){
+    $scope.isCleanButton = true;
+    $scope.islastFolder = false;
+    $scope.searchFlag = false;
+  };
+
+  $scope.onblur = function(){
+
+  };
+
+  $scope.clearSearch = function(){
+    $scope.isCleanButton = false;
+    
+    $scope.searchFlag = false;
+    $scope.searchData.query = "";
+    if (subModule !== '') {//最后一级目录，直接加载文章
+        $scope.islastFolder = true;
+        $rootScope.lawsCurrentPage = 1;
+        ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
+            $scope.articles = data;
+            if (data.length == 0) {
+              $scope.noMoreAvailable = true;
+            };
+        },function(){
+            $scope.noMoreAvailable = true;
+        });
+        return;
+    }
+    if (module !== '') {//二级目录
+      $rootScope.lawsCurrentPage = 1;
+      $scope.getModule();
+      return;
+    }
+    $scope.islastFolder = false;
+  };
+
   $scope.$on('$stateChangeSuccess', function() {
-    //console.log("laws change");
+    console.log("laws stateChangeSuccess");
+    //$scope.islastFolder = false;
+    //$scope.searchFlag = false;
+    //supModule = "常用法律法规";
+    //module = ""; 
+    //subModule = "";
     //$scope.getModule();
   });
 })
@@ -490,10 +609,12 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('InterfaceCtrl',function($scope,Folders,ArticleService,LogsService,UpdateService){
+.controller('InterfaceCtrl',function($scope,$http,$ionicLoading,$rootScope,Folders,ArticleService,LogsService,UpdateService,appConfig){
 
   $scope.getModule = function(){
     //$ionicTabsDelegate.select(index);
+    $scope.requestUrl = appConfig.url + "/module";
+    $scope.requestParams = "supModule=执法工作手册"
     Folders.getFolderList("执法工作手册", "", "").then(function(data){
       $scope.result = data;
       $scope.status = data.status;
@@ -507,7 +628,29 @@ angular.module('starter.controllers', [])
 
   $scope.getArticleList = function(){
     //$ionicTabsDelegate.select(index);
-    ArticleService.getArticleList("执法工作手册","社区民警执法手册","", 1).then(function(data){
+    $scope.requestUrl = appConfig.url + "/doclist";
+    $scope.requestParams = "supLm=执法工作手册，lm=社区民警执法手册，subLm=''，pageNo=1";
+    $http({
+          method: "post",
+          url: appConfig.url + "/doclist",
+          params: {'pageNo':1,'supLm':"执法工作手册", 'lm':"社区民警执法手册", 'subLm':""},
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'appId': appConfig.appId
+          },
+          cache: $rootScope.useCache
+        }).success(function(data){
+          $scope.result = data;
+            $scope.status = data.status;
+            $scope.errorMsg = data.message;
+          //console.log(data.result);
+          //defer.resolve(data.result);
+        }).error(function(err){
+          $scope.result = err;
+          console.log("fail to http POST doclist");
+          //defer.reject(err);
+        });
+    /*ArticleService.getArticleList("执法工作手册","社区民警执法手册","", 1).then(function(data){
             $scope.result = data;
             $scope.status = data.status;
             $scope.errorMsg = data.message;
@@ -516,25 +659,42 @@ angular.module('starter.controllers', [])
             //$scope.hide();
         },function(err){
             $scope.result = err;
-    });
+    });*/
   };
 
   $scope.getDoc = function(){
     //$ionicTabsDelegate.select(index);
-    ArticleService.getArticle("").then(function(data){
+    $scope.requestUrl = appConfig.url + "/doc";
+    $scope.requestParams = "id=4164，deviceId='test',lastPosition=''"
+    $http({
+        method: "post",
+        url: appConfig.url + "/doc",
+        params: {'id':4164,'deviceId':'test','lastPosition':""},
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'appId': appConfig.appId
+        }
+       }).success(function (data) {
+        if (data.status == "FAIL") {
+          console.log("doc service return error code: "+ data.status);
+          //defer.reject(data.status);
+        }else{
           $scope.result = data;
           $scope.status = data.status;
           $scope.errorMsg = data.message;
-          console.log("articleData=" + data);
-            
-          //$scope.hide();
-        },function(err){
-            $scope.result = err;
-    });
+          //defer.resolve(data.result);
+        }
+       }).error(function (err) {
+        $scope.result = err;
+        console.log("fail to http POST doc");
+        //defer.reject(err);
+       });
   };
 
   $scope.savelog = function(){
     //$ionicTabsDelegate.select(index);
+    $scope.requestUrl = appConfig.url + "/log";
+    $scope.requestParams = "deviceId=testInterface"
     LogsService.addLogin("testInterface").then(function(data){
         $scope.result = data;
         $scope.status = data.status;
@@ -549,6 +709,8 @@ angular.module('starter.controllers', [])
 
   $scope.testSearch = function(){
     //$ionicTabsDelegate.select(index);
+    $scope.requestUrl = appConfig.url + "/search";
+    $scope.requestParams = "val=执法"
     ArticleService.search("执法").then(function(data){
 
       $scope.result = data;
@@ -561,15 +723,22 @@ angular.module('starter.controllers', [])
   };
 
   $scope.testUpdate = function(){
+    $ionicLoading.show({
+        template: "正在连接..."
+      });
     //$ionicTabsDelegate.select(index);
+    $scope.requestUrl = appConfig.url + "/update";
+    $scope.requestParams = "version=" + $rootScope.versionName;
     UpdateService.updateApp().then(function(data){
 
       $scope.result = data;
       $scope.status = data.status;
       $scope.errorMsg = data.message;
       console.log("update=" + data);
+      $ionicLoading.hide();
     },function(err){
       $scope.result = err;
+      $ionicLoading.hide();
     });
   };
 

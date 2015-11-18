@@ -7,10 +7,10 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
-        "url": "http://139.196.170.172:8080/jwscapi",//后台服务地址appService-
-        //"url": "http://192.168.1.107:8080",
+        //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
+        //"url": "http://192.168.1.106:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
-        "port": "8080",
+        "url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\my.db",//数据库路径
