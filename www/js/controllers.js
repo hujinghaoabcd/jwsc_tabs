@@ -1,22 +1,9 @@
 angular.module('starter.controllers', [])
 
-.controller('TabCtrl',function($scope,$ionicTabsDelegate){
+.controller('TabCtrl',function($scope){
 
   $scope.onFolderSelect = function(index){
-    /*console.log(this);
-    console.log(this.title);
-    console.log(this.href);
-    console.log(this.$$childHead);
-    console.log(this.child);*/
-    /*alert($rootScope.query);
-    if ($rootScope.query == undefined) {
-      return;
-    };*/
-    //$ionicHistory.goBack(-1);
-    //$scope.islastFolder = false;
-    //$urlRouterProvider.otherwise('/tab/folder/执法工作手册//');
-    //$ionicTabsDelegate.select(index);
-    //window.location.reload(true);
+    
   }
 
   $scope.onTabDeselected = function(){
@@ -30,7 +17,7 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, Folders, ArticleService) {
+.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, FolderService, ArticleService) {
 
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
 
@@ -62,13 +49,7 @@ angular.module('starter.controllers', [])
     //};
   //console.log("db=====" + db);
   $scope.getModule =function(){
-    //console.log("db=" + db);
-    //dbService.setup();
-    //dbService.getModule(supModule, module, subModule);
-    //console.log("$scope.query=" + $scope.query);
-    //$scope.query = "111";
-    //console.log(supModule + "---" +module + "---" +subModule);
-    Folders.getFolderList(supModule, module, subModule).then(function(data){
+    FolderService.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
       console.log("modulesData=" + data);
       if (data.length == 0) {
@@ -92,28 +73,16 @@ angular.module('starter.controllers', [])
   $scope.getModule();
 
   $scope.doRefresh = function(){
-    //console.log("刷新");
-    //$scope.show();
-    //console.log("searchFlag=" + $scope.searchFlag)
+    
     if ($scope.searchFlag) {
-      //$scope.noMoreAvailable = true;
       $scope.$broadcast('scroll.refreshComplete');
       return;
     };
-    //console.log("1");
+
     $rootScope.folderCurrentPage = 1;
     $scope.noMoreAvailable = false;
     $scope.getModule();
-    /*ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data) {
-      if (data.length == 0) {
-        $scope.noMoreAvailable = true;
-      };
-      console.log(data.length);
-      console.log("1");
-    },function(){
-      console.log("2");
-      $scope.noMoreAvailable = true;
-    });*/
+
     $scope.$broadcast('scroll.refreshComplete');
   };
 
@@ -227,14 +196,7 @@ angular.module('starter.controllers', [])
     //console.log(toParams);
     //console.log(fromState);
     //console.log(fromParams);
-    //$scope.query = "222";
     console.log("foler stateChangeSuccess");
-    //$scope.islastFolder = false;
-    //$scope.searchFlag = false;
-    //supModule = "执法工作手册";
-    //module = ""; 
-    //subModule = "";
-    //$scope.getModule();
   });
 })
 
@@ -252,13 +214,13 @@ angular.module('starter.controllers', [])
   $scope.lastPosition = "";
   $scope.noMoreAvailable = false;
   $scope.showAlert = function() {
-       var alertPopup = $ionicPopup.alert({
-         title: '网络异常',
-         template: '请检查你的网络！'
-       });
-       alertPopup.then(function(res) {
-         //console.log(res);
-       });
+     var alertPopup = $ionicPopup.alert({
+       title: '网络异常',
+       template: '请检查你的网络！'
+     });
+     alertPopup.then(function(res) {
+       //console.log(res);
+     });
   };
 
   $scope.showServiceAlert = function() {
@@ -271,13 +233,12 @@ angular.module('starter.controllers', [])
        });
   };
 
-  //$scope.article = {};
   $ionicLoading.show({
       template: "正在加载..."
   });
+
   ArticleService.getArticle($scope.lastPosition).then(function(data){
     $scope.article = data;
-    //console.log(data.lastPosition);
     $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
     if ($scope.lastPosition !== -1) {
@@ -293,13 +254,10 @@ angular.module('starter.controllers', [])
   });
 
   $scope.loadMore = function(){
-    //console.log("--loadMore--" + $scope.lastPosition);
-    //alert($scope.lastPosition);
+ 
     ArticleService.getArticle($scope.lastPosition).then(function(data){
-      //console.log($scope.article.tBt);
-      //console.log(data.tZw.length);
+
       $scope.article.tZw += data.tZw;
-      //console.log(data.lastPosition);
       $scope.lastPosition = data.lastPosition;
       if ($scope.lastPosition !== -1) {
         $scope.loadMore($scope.lastPosition);
@@ -317,16 +275,15 @@ angular.module('starter.controllers', [])
 })
 
 
-.controller('LawsCtrl', function($scope, $stateParams, $rootScope, Folders, ArticleService) {
+.controller('LawsCtrl', function($scope, $stateParams, $rootScope, FolderService, ArticleService) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
   // listen for the $ionicView.enter event:
   //
   //$scope.$on('$ionicView.enter', function(e) {
+    //研究使用方式
   //});
-  //console.log($stateParams);
-  //console.log('lawsCurrentPage='+ $rootScope.lawsCurrentPage);
 
   var supModule = $stateParams.supModuleName;
 
@@ -338,14 +295,12 @@ angular.module('starter.controllers', [])
   $rootScope.lawsCurrentPage = 1;
 
   $scope.getModule =function(){
-    //console.log("111111111--"+ supModule + "---" +module + "---" +subModule);
-    Folders.getFolderList(supModule, module, subModule).then(function(data){
+    FolderService.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
       //console.log(data);
       //console.log(data.length);
       if (data.length == 0) {
         $scope.islastFolder = true;
-        //console.log('lawsCurrentPage='+ $rootScope.lawsCurrentPage);
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
             $scope.articles = data;
             if (data.length == 0) {
@@ -360,13 +315,14 @@ angular.module('starter.controllers', [])
       };
       //$scope.hide();
     },function(){
-      //$scope.noMoreAvailable = true;
+      $scope.noMoreAvailable = true;
       //$scope.hide();
       //$scope.showAlert();
     });
   };
   $scope.getModule();
 
+  //所以页面都可下来刷新
   $scope.doRefresh = function(){
     //console.log("刷新");
     //$scope.show();
@@ -379,17 +335,7 @@ angular.module('starter.controllers', [])
     $rootScope.lawsCurrentPage = 1;
     $scope.noMoreAvailable = false;
     $scope.getModule();
-    /*ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data) {
-      $scope.articles = data;
-      if (data.length == 0) {
-        $scope.noMoreAvailable = true;
-      };
-      
-    },function(){
-      //$scope.hide();
-      //$scope.showAlert();
-      $scope.noMoreAvailable = true;
-    });*/
+
     $scope.$broadcast('scroll.refreshComplete');
   };
 
@@ -501,16 +447,13 @@ angular.module('starter.controllers', [])
   });
 })
 
-.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading, $ionicPopover, $timeout,appConfig) {
-  $scope.settings = {
-    enableFriends: true
-  };
+.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading, $ionicPopover, $timeout,UpdateService,appConfig) {
 
   $scope.useCache = $rootScope.useCache;
   $scope.versionName = $rootScope.versionName;
   console.log("$rootScope.versionName:" + $rootScope.versionName);
 
-   $scope.clean = function(){
+  $scope.clean = function(){
      var myPopup = $ionicPopup.show({
       template: '正在清除缓存...',
       title: '清除缓存'
@@ -524,17 +467,8 @@ angular.module('starter.controllers', [])
     }, 3000);
   };
 
-  $scope.setCache = function(){
-    console.log($scope.useCache);
-    if (!$scope.useCache) {
-      $rootScope.useCache = true;
-    }else{
-      $rootScope.useCache = false;
-    };
-  };
-
+  //页面显示年份
   $scope.now = new Date();
-
   // .fromTemplate() method
   var template = '<ion-popover-view style="height: 50px"><ion-content><ion-list><ion-item>邮箱：vip@bxsoft.cn</ion-item></ion-list></ion-content></ion-popover-view>';
 
@@ -545,6 +479,7 @@ angular.module('starter.controllers', [])
   $scope.openPopover = function($event) {
     $scope.popover.show($event);
   };
+
   $scope.closePopover = function() {
     $scope.popover.hide();
   };
@@ -553,6 +488,7 @@ angular.module('starter.controllers', [])
     $scope.popover.remove();
   });
 
+  //退出提示
   function confirmPopup(){
     var confirmPopup = $ionicPopup.confirm({  
         title: '<strong>退出应用</strong>',  
@@ -569,6 +505,7 @@ angular.module('starter.controllers', [])
         }  
     });
   }
+
   $scope.logout = function() {
     //ionic.Platform.exitApp();
     confirmPopup();
@@ -590,32 +527,57 @@ angular.module('starter.controllers', [])
 
   $scope.update = function() {
     //TODO
+    var serverVersion = "";
+    var updateContext = "版本有更新";
+    var apkFilePath = appConfig.url + "/resources/apk/jwsc.apk";
+
     var updatePopup = $ionicPopup.show({
       template: '正在检查...',
       title: '检查版本'
     });
+
     updatePopup.then(function(res) {
-      $ionicLoading.show({
-        template: "已是最新版本"
+          
+      UpdateService.updateApp().then(function(data){
+        console.log("request update interface response data:");
+        console.log(data);
+        if (data.totalCount == 1) {
+          serverVersion = data.content.packageVersion;//应用版本号
+          apkFilePath = data.content.pkgFilePath;//更新地址
+          updateContext = data.content.packageDesc;//应用描述
+        };          
+      },function(err){
+        console.log("request update interface error:");
+        console.log(err);
       });
-      console.log('update!'+ res);
-      $timeout(function() {
-        $ionicLoading.hide();
-      }, 1000);
+      if (serverVersion == "" || $rootScope.versionName == serverVersion) {
+        $ionicLoading.show({
+          template: "已是最新版本"
+        });
+        console.log('update!'+ res);
+        updatePopup.close();
+        $timeout(function() {
+          $ionicLoading.hide();
+        }, 1000);
+      }else{
+        updatePopup.close();
+        UpdateService.popupUpdateView(apkFilePath,updateContext);
+      }
+      
     });
     $timeout(function() {
       updatePopup.close(); //close the popup after 3 seconds for some reason
-    }, 2000);
+    }, 3000);
   };
 })
 
-.controller('InterfaceCtrl',function($scope,$http,$ionicLoading,$rootScope,Folders,ArticleService,LogsService,UpdateService,appConfig){
+.controller('InterfaceCtrl',function($scope,$http,$ionicLoading,$rootScope,FolderService,ArticleService,LogsService,UpdateService,appConfig){
 
   $scope.getModule = function(){
     //$ionicTabsDelegate.select(index);
     $scope.requestUrl = appConfig.url + "/module";
     $scope.requestParams = "supModule=执法工作手册"
-    Folders.getFolderList("执法工作手册", "", "").then(function(data){
+    FolderService.getFolderList("执法工作手册", "", "").then(function(data){
       $scope.result = data;
       $scope.status = data.status;
       $scope.errorMsg = data.message;
@@ -650,16 +612,6 @@ angular.module('starter.controllers', [])
           console.log("fail to http POST doclist");
           //defer.reject(err);
         });
-    /*ArticleService.getArticleList("执法工作手册","社区民警执法手册","", 1).then(function(data){
-            $scope.result = data;
-            $scope.status = data.status;
-            $scope.errorMsg = data.message;
-            console.log("articlesData=" + data);
-            
-            //$scope.hide();
-        },function(err){
-            $scope.result = err;
-    });*/
   };
 
   $scope.getDoc = function(){

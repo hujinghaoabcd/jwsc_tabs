@@ -1,6 +1,6 @@
 angular.module('starter.services', [])
 
-.factory('Folders',function($q, $http,$rootScope,$stateParams,appConfig){
+.factory('FolderService',function($q, $http,$rootScope,$stateParams,appConfig){
 
   return {
     /**获取分类列表**/
@@ -131,7 +131,8 @@ angular.module('starter.services', [])
   };
 })
 
-.factory('UpdateService',function($q, $http,$rootScope,$stateParams,appConfig){
+.factory('UpdateService',function($q, $http,$rootScope,$stateParams,$ionicPopup,$ionicLoading,$timeout,
+  $cordovaFileTransfer,$cordovaFileOpener2,appConfig){
 
   return {
     /**更新**/
@@ -153,6 +154,61 @@ angular.module('starter.services', [])
           defer.reject(err);
         });
       return defer.promise;
+    },
+
+    /**更新窗口**/
+    popupUpdateView : function(apkFilePath,updateContext){
+      var confirmPopup = $ionicPopup.confirm({
+                title: '版本升级',
+                template: updateContext, //从服务端获取更新的内容
+                cancelText: '取消',
+                okText: '升级'
+        });
+      confirmPopup.then(function (res) {
+          if (res) {
+              $ionicLoading.show({
+                  template: "已经下载：0%"
+              });
+              var url = apkFilePath; //可以从服务端获取更新APP的路径
+              var targetPath = appConfig.targetPath; //APP下载存放的路径，可以使用cordova file插件进行相关配置
+              var trustHosts = true
+              var options = {};
+              $cordovaFileTransfer.download(url, targetPath, options, trustHosts).then(function (result) {
+                  // 打开下载下来的APP
+                  $cordovaFileOpener2.open(targetPath, 'application/vnd.android.package-archive'
+                  ).then(function () {
+                          // 成功
+                          console.log("open apk success");
+                      }, function (err) {
+                          // 错误
+                          console.log("open apk fail");
+                      });
+                  $ionicLoading.hide();
+              }, function (err) {
+                  //alert('下载失败');
+                  $ionicLoading.show({
+                    template: "下载失败"
+                  });
+                  console.log('update!'+ res);
+                    $timeout(function() {
+                    $ionicLoading.hide();
+                  }, 1000);
+              }, function (progress) {
+                  //进度，这里使用文字显示下载百分比
+                  $timeout(function () {
+                      var downloadProgress = (progress.loaded / progress.total) * 100;
+                      $ionicLoading.show({
+                          template: "已经下载：" + Math.floor(downloadProgress) + "%"
+                      });
+                      if (downloadProgress > 99) {
+                          $ionicLoading.hide();
+                      }
+                  })
+              });
+          } else {
+              // 取消更新
+          }
+      });
     }
   };
-});;
+});

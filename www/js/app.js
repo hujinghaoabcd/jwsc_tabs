@@ -7,53 +7,54 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
-        //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
+        "url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
         //"url": "http://192.168.1.106:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
-        "url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
+        //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\my.db",//数据库路径
         "targetPath":"file:///storage/sdcard0/Download/jwsc_update.apk"//下载文件地址
 })
-.run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$location,$ionicHistory,$timeout,$cordovaFileTransfer, $cordovaFile, $cordovaFileOpener2,$cordovaSQLite,LogsService,appConfig) {
+.run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$location,$ionicHistory,$timeout,
+  $cordovaFileTransfer, $cordovaFile, $cordovaFileOpener2,$cordovaSQLite,LogsService,UpdateService,appConfig) {
 
-    //主页面显示退出提示框  
-    $ionicPlatform.registerBackButtonAction(function (e) {  
-  
-        e.preventDefault();  
+  //主页面显示退出提示框  
+  $ionicPlatform.registerBackButtonAction(function (e) {  
 
-        function showConfirm() {  
-            var confirmPopup = $ionicPopup.confirm({  
-                title: '<strong>退出应用</strong>',  
-                template: '你确定要退出应用吗？',  
-                okText: '退出',  
-                cancelText: '取消'  
-            });  
+      e.preventDefault();  
 
-            confirmPopup.then(function (res) {  
-                if (res) {  
-                    ionic.Platform.exitApp();  
-                } else {  
-                    // Don't close  
-                }  
-            });  
-        }  
+      function showConfirm() {  
+          var confirmPopup = $ionicPopup.confirm({  
+              title: '<strong>退出应用</strong>',  
+              template: '你确定要退出应用吗？',  
+              okText: '退出',  
+              cancelText: '取消'  
+          });  
 
-        // Is there a page to go back to?  
-        console.log($location.path());
-        if ($location.path() == '/tab/' ) {
-            console.log("/tab");  
-            showConfirm();  
-        } else if ($ionicHistory.backView()) {    
-            $ionicHistory.goBack(-1);
-        } else {  
-            // This is the last page: Show confirmation popup  
-            showConfirm();  
-        }  
+          confirmPopup.then(function (res) {  
+              if (res) {  
+                  ionic.Platform.exitApp();  
+              } else {  
+                  // Don't close  
+              }  
+          });  
+      }  
 
-        return false;  
-    }, 101);
+      // Is there a page to go back to?  
+      console.log($location.path());
+      if ($location.path() == '/tab/' ) {
+          console.log("/tab");  
+          showConfirm();  
+      } else if ($ionicHistory.backView()) {    
+          $ionicHistory.goBack(-1);
+      } else {  
+          // This is the last page: Show confirmation popup  
+          showConfirm();  
+      }  
+
+      return false;  
+  }, 101);
 
   $ionicPlatform.ready(function() {
     $rootScope.folderCurrentPage = 1;
@@ -71,8 +72,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       // org.apache.cordova.statusbar required
       StatusBar.styleLightContent();
     }
-    var serverVersion = "2.0.0";
-
+    
     /*var db = $cordovaSQLite.openDB({ name: ".sh.gaj\\sh.gaj.cnfj.jwsc\\my.db" });
     $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS people (id integer primary key, firstname text, lastname text)");
 
@@ -94,97 +94,67 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         }, function (err) {
             console.error(err);
         }
-     );*/
+     );*/    
+
+    //TODO  获取应用更新信息
+    var serverVersion = "2.0.0";
+    var updateContext = "版本有更新";
+    var apkFilePath = appConfig.url + "/resources/apk/jwsc.apk";
+    UpdateService.updateApp().then(function(data){
+      console.log("request update interface response data:");
+      console.log(data);
+      if (data.totalCount == 1) {
+        serverVersion = data.content.packageVersion;//应用版本号
+        apkFilePath = data.content.pkgFilePath;//更新地址
+        updateContext = data.content.packageDesc;//应用描述
+      };          
+    },function(err){
+      console.log("request update interface error:");
+      console.log(err);
+    });
 
     cordova.getAppVersion.getVersionNumber(function (version) {
       console.log("varsion:" + version);
       setVersionInfo(version);
-      if(version != serverVersion){
-        updadeVersion(version);
+      if(serverVersion !="" && version != serverVersion){
+        updadeVersion();//弹出更新窗口
       }
     });
-    //alert("1234");
+    
+    //设置全局版本号信息
+    function setVersionInfo(ver){
+      $rootScope.versionName = ver;
+    };
+
     ionic.Platform.ready(function(){
-    // will execute when device is ready, or immediately if the device is already ready.
+      // will execute when device is ready, or immediately if the device is already ready.
+      //研究使用方式？
     });
+
+    //获取平台信息
     var deviceInformation = ionic.Platform.device();
-    //console.log(deviceInformation);
-    //$log.log(deviceInformation);
+    
+    //手机imei
     var myIMEI = deviceInformation.uuid;
     $rootScope.myIMEI = myIMEI;
     console.log($rootScope.myIMEI);
 
+    //操作系统信息
     var currentPlatformVersion = ionic.Platform.version();
     console.log("currentPlatformVersion:" + currentPlatformVersion);
 
     //记录登录日志
     LogsService.addLogin(myIMEI);
+    
+    //更新
+    function updadeVersion(){
+        UpdateService.popupUpdateView(apkFilePath,updateContext);
+    }
 
-    function setVersionInfo(ver){
-      $rootScope.versionName = ver;
-    };
     //数据库初始化
     //dbService.setup();
     //dbService.initTable();
     //dbService.getModule("执法工作手册", "111", "");
-    //更新版本
-    function updadeVersion(ver){
-
-      var confirmPopup = $ionicPopup.confirm({
-                title: '版本升级',
-                template: '1.修复缺陷；</br>2.新增功能；</br>3.优化程序，提高性能。', //从服务端获取更新的内容
-                cancelText: '取消',
-                okText: '升级'
-            });
-            confirmPopup.then(function (res) {
-                if (res) {
-                    $ionicLoading.show({
-                        template: "已经下载：0%"
-                    });
-                    var url = appConfig.url + "/resources/apk/jwsc.apk"; //可以从服务端获取更新APP的路径
-                    var targetPath = appConfig.targetPath; //APP下载存放的路径，可以使用cordova file插件进行相关配置
-                    var trustHosts = true
-                    var options = {};
-                    $cordovaFileTransfer.download(url, targetPath, options, trustHosts).then(function (result) {
-                        // 打开下载下来的APP
-                        $cordovaFileOpener2.open(targetPath, 'application/vnd.android.package-archive'
-                        ).then(function () {
-                                // 成功
-                                console.log("open apk success");
-                            }, function (err) {
-                                // 错误
-                                console.log("open apk fail");
-                            });
-                        $ionicLoading.hide();
-                    }, function (err) {
-                        alert('下载失败');
-                        $ionicLoading.hide();
-                    }, function (progress) {
-                        //进度，这里使用文字显示下载百分比
-                        $timeout(function () {
-                            var downloadProgress = (progress.loaded / progress.total) * 100;
-                            $ionicLoading.show({
-                                template: "已经下载：" + Math.floor(downloadProgress) + "%"
-                            });
-                            if (downloadProgress > 99) {
-                                $ionicLoading.hide();
-                            }
-                        })
-                    });
-                } else {
-                    // 取消更新
-                }
-            });
-      /*$ionicPopup.show({
-        template: ver,
-        title: 'appVersion'
-      });*/
-    };
-
-    /*$ionicPopup.show({
-      template: "111",
-      title: 'appVersion'
-    });*/
     //$location.path('/tab/folder/执法工作手册//');
   });
 })
