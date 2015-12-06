@@ -24,8 +24,7 @@
         </ion-item>
     </ion-list>
     <div class="list" ng-if="islastFolder">
-        <!-- <ion-refresher pulling-text="下拉刷新..." pulling-icon="ion-android-arrow-down" on-refresh="doRefresh()" refreshing-text="刷新成功" refreshing-icon="ion-loading-c" >
-        </ion-refresher> -->
+        
         <ion-list >
           <ion-item  class="item-avatar" ng-repeat="article in articles" href="#/tab/articles/{{article.docid}}"
             collection-item-width="'100%'" >

@@ -1,6 +1,50 @@
 angular.module('starter.services', [])
 
-.factory('FolderService',function($q, $http,$rootScope,$stateParams,appConfig){
+/**数据库操作**/
+.factory('DBA', function($cordovaSQLite, $q, $ionicPlatform) {
+  var self = this;
+
+  // Handle query's and potential errors
+  self.executeSql = function (sql, parameters) {
+    parameters = parameters || [];
+    var q = $q.defer();
+
+    $ionicPlatform.ready(function () {
+      $cordovaSQLite.execute(db, sql, parameters)
+        .then(function (result) {
+          q.resolve(result);
+        }, function (error) {
+          console.warn('I found an error');
+          console.warn(error);
+          q.reject(error);
+        });
+    });
+    //console.log("----db search");
+    return q.promise;
+  }
+
+  // Proces a result set
+  self.getAll = function(result) {
+    var output = [];
+
+    for (var i = 0; i < result.rows.length; i++) {
+      output.push(result.rows.item(i));
+    }
+    return output;
+  }
+
+  // Proces a single result
+  self.getById = function(result) {
+    var output = null;
+    output = angular.copy(result.rows.item(0));
+    return output;
+  }
+
+  return self;
+})
+
+/**目录service**/
+.factory('FolderService',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
 
   return {
     /**获取分类列表**/
@@ -20,15 +64,42 @@ angular.module('starter.services', [])
           //console.log(data.result);
           defer.resolve(data.result);
         }).error(function(err){
-          console.log("fail to http POST module");
-          defer.reject(err);
+          console.log("fail to http POST module, start get data by local db");
+          //网络获取失败，从本地获取数据
+          
+          
+          console.log(supModule + "|" + module + "|" + subModule);
+          if (supModule != '' && module !== '' && subModule != '') {
+            defer.resolve([]);
+          }else{
+            var selectSql = "select id, moduleid, supModuleName, moduleName, subModuleName from moduleName where supModuleName = ? ";
+            var parameters = [supModule];
+
+            if (supModule != '' && module !== '' && subModule == '') {
+              selectSql += " and moduleName = ? and subModuleName !=''";
+              parameters.push(module);
+            }
+            else if (supModule != '' && module === '') {
+              selectSql += " and moduleName != '' and subModuleName =''";
+            };
+            console.log(selectSql);
+            console.log(parameters);
+            DBA.executeSql(selectSql,parameters).then(function(result){
+              //console.log(result);
+              defer.resolve(DBA.getAll(result));
+            },function(err){
+              console.log("DBA err");
+              defer.reject(err);
+            })
+          }      
         });
       return defer.promise;
     }
   };
 })
 
-.factory('ArticleService',function($q, $http,$rootScope,$stateParams,appConfig){
+/**文章service**/
+.factory('ArticleService',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
 
   //var pageNo = 1;
   var service = {    // our factory definition
@@ -49,19 +120,48 @@ angular.module('starter.services', [])
           //console.log(data.result);
           defer.resolve(data.result);
         }).error(function(err){
-          console.log("fail to http POST doclist");
-          defer.reject(err);
+          console.log("fail to http POST doclist, start get data by local");
+
+          var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where suplm = ?"
+          var parameters = [supLm];
+
+          var size = 10;//size:每页显示条数，index页码
+          var start = 0;
+          start = size * (pageNo -1);
+          if (subLm !=='') {
+            selectSql += " and lm = ? and sublm = ?";
+            parameters.push(lm);
+            parameters.push(subLm);
+          }
+          else {
+            selectSql += " and lm = ? and sublm = ''";
+            parameters.push(lm);
+          };
+          
+          parameters.push(size);
+          parameters.push(start);
+          selectSql += " order by tDate desc limit ? offset ?";//offset代表从第几条记录“之后“开始查询，limit表明查询多少条结果
+
+          console.log(selectSql);
+          console.log(parameters);
+          DBA.executeSql(selectSql,parameters).then(function(result){
+            //console.log(result);
+            defer.resolve(DBA.getAll(result));
+          },function(err){
+            console.log("DBA err");
+            defer.reject(err);
+          });
         });
       return defer.promise;
     },
     /** 获取详细内容 **/
-    getArticle :function(lastPosition){
-      console.log($stateParams.docid)
+    getArticle :function(docid,lastPosition){
+      //console.log(docid)
       var defer = $q.defer();
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':$stateParams.docid,'deviceId':$rootScope.myIMEI,'lastPosition':lastPosition},
+        params: {'id':docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId
@@ -75,8 +175,23 @@ angular.module('starter.services', [])
           defer.resolve(data.result);
         }
        }).error(function (err) {
-        console.log("fail to http POST doc");
-        defer.reject(err);
+        console.log("fail to http POST doc, , start get data by local");
+
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
+        var parameters = [docid];
+
+        console.log(selectSql);
+        console.log(parameters);
+        DBA.executeSql(selectSql,parameters).then(function(result){
+          //console.log(result);
+          var resultObj = DBA.getById(result);
+          resultObj['lastPosition'] = -1;
+          
+          defer.resolve(resultObj);
+        },function(err){
+          console.log("DBA err");
+          defer.reject(err);
+        });
        });
      return defer.promise;
     },
@@ -96,8 +211,34 @@ angular.module('starter.services', [])
       }).success(function (data) {
         defer.resolve(data.result);
       }).error(function (err) {
-        console.log("fail to http POST search");
-        defer.reject(err);
+        console.log("fail to http POST search, start get data by local");
+
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate from doc where zwText like ?";
+        
+        var parameters = ["%" + val + "%"];
+        DBA.executeSql(selectSql,parameters).then(function(result){
+          //console.log(result.rows);
+          //TODO 处理副标题tm字段
+          var output = [];
+          var highlighter = "<span style=\"color:red;\">" + val+ "</span>";
+          for (var i = 0; i < result.rows.length; i++) {
+            //console.log(result.rows.item(i));
+            var temp = result.rows.item(i);
+            //console.log(temp.zwText);
+            var index = temp.zwText.indexOf(val);
+            var lm = temp.zwText.substring(index - 50, index + 100);//截取一段字符
+            temp.lm = lm.replace(val,highlighter);
+            //console.log(temp);
+            output.push(temp);
+          }
+
+          defer.resolve(output);
+        },function(err){
+          console.log("DBA err");
+          defer.reject(err);
+        });
+
+        //defer.reject(err);
       });
      return defer.promise;
     }
@@ -105,6 +246,7 @@ angular.module('starter.services', [])
   return service;
 })
 
+/**日志service**/
 .factory('LogsService',function($q, $http,$rootScope,$stateParams,appConfig){
 
   return {
@@ -131,6 +273,7 @@ angular.module('starter.services', [])
   };
 })
 
+/**更新service**/
 .factory('UpdateService',function($q, $http,$rootScope,$stateParams,$ionicPopup,$ionicLoading,$timeout,
   $cordovaFileTransfer,$cordovaFileOpener2,appConfig){
 

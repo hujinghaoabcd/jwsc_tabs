@@ -1,9 +1,21 @@
 angular.module('starter.controllers', [])
 
-.controller('TabCtrl',function($scope){
+.controller('TabCtrl',function($scope,DBA){
+
+  //var db = $cordovaSQLite.openDB({ name: "my.db" });
+
+  // for opening a background db:
+  //var db = $cordovaSQLite.openDB({ name: "my.db", bgType: 1 });
+  //console.log("db=" + db);
+  //var query = "select * from team";
+  //DBA.executeSql(query);
+
+  //var insertSql = "INSERT INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,tDate) VALUES (?,?,?,?,?,?,?,?)";
+  //var parameters = ['1','1','1','1','1','1','1','1'];
+  //DBA.executeSql(insertSql,parameters);
 
   $scope.onFolderSelect = function(index){
-    
+
   }
 
   $scope.onTabDeselected = function(){
@@ -34,24 +46,10 @@ angular.module('starter.controllers', [])
   $rootScope.supModule = supModule;//用于选择tab的时候返回目录
   console.log('supModule='+ supModule + '. module='+ module + '. subModule='+ subModule);
 
-  //var db1；
-  /*$ionicPlatform.ready(function(){
-    dbService.setup();
-  });*/
-  //document.addEventListener("deviceready", onDeviceReady, false);
-
-    // device APIs are available
-    //
-    //function onDeviceReady() {
-        //var db = window.openDatabase("test.db", "1.0", "Cordova Demo", 200000);
-        //db.transaction(populateDB, errorCB, successCB);
-        //db1 = window.sqlitePlugin.openDatabase({name: "test.db"})
-    //};
-  //console.log("db=====" + db);
   $scope.getModule =function(){
     FolderService.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
-      console.log("modulesData=" + data);
+      //console.log("modulesData=" + data);
       if (data.length == 0) {
         $scope.islastFolder = true;
         ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
@@ -209,7 +207,7 @@ angular.module('starter.controllers', [])
     };
 }])
 
-.controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, ArticleService) {
+.controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, $stateParams, ArticleService) {
 
   $scope.lastPosition = "";
   $scope.noMoreAvailable = false;
@@ -237,12 +235,12 @@ angular.module('starter.controllers', [])
       template: "正在加载..."
   });
 
-  ArticleService.getArticle($scope.lastPosition).then(function(data){
+  ArticleService.getArticle($stateParams.docid,$scope.lastPosition).then(function(data){
     $scope.article = data;
     $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
     if ($scope.lastPosition !== -1) {
-        $scope.loadMore($scope.lastPosition);
+        $scope.loadMore($stateParams.docid);
     };
   },function(err){
       if (err == "FAIL") {
@@ -253,14 +251,14 @@ angular.module('starter.controllers', [])
       $ionicLoading.hide();
   });
 
-  $scope.loadMore = function(){
+  $scope.loadMore = function(docid){
  
-    ArticleService.getArticle($scope.lastPosition).then(function(data){
+    ArticleService.getArticle(docid,$scope.lastPosition).then(function(data){
 
       $scope.article.tZw += data.tZw;
       $scope.lastPosition = data.lastPosition;
       if ($scope.lastPosition !== -1) {
-        $scope.loadMore($scope.lastPosition);
+        $scope.loadMore(docid);
       };
     },function(err){
         if (err == "FAIL") {
@@ -447,7 +445,7 @@ angular.module('starter.controllers', [])
   });
 })
 
-.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading, $ionicPopover, $timeout,UpdateService,appConfig) {
+.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading, $ionicPopover, $timeout,DBA,FolderService,ArticleService,UpdateService,appConfig) {
 
   $scope.useCache = $rootScope.useCache;
   $scope.versionName = $rootScope.versionName;
@@ -459,7 +457,7 @@ angular.module('starter.controllers', [])
       title: '清除缓存'
     });
     myPopup.then(function(res) {
-      console.log('clean!', res);
+      console.log('clean!'+res);
       window.localStorage.clear();
     });
     $timeout(function() {
@@ -506,23 +504,99 @@ angular.module('starter.controllers', [])
     });
   }
 
+  /**退出按钮**/
   $scope.logout = function() {
     //ionic.Platform.exitApp();
     confirmPopup();
   };
 
+  /**获取所有目录和文章**/
+  function getAllModuleAndDocList(suplm,module,sublm){
+    FolderService.getFolderList(suplm,module,sublm).then(function(data){        
+        //moduleList = data;
+        //console.log(moduleList);
+        if (data.length > 0) {
+          angular.forEach(data, function(moduleData){
+            //console.log(moduleData);
+            //moduleList.push(data1);
+            //TODO插入SQLite
+            var insertSql = "replace INTO moduleName (id, moduleid, supModuleName, moduleName, subModuleName) VALUES (?,?,?,?,?)";
+            var parameters = [moduleData.id,moduleData.moduleid,moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName];
+            DBA.executeSql(insertSql,parameters);
+            //遍历下一个目录
+            getAllModuleAndDocList(moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName);
+
+          })
+        }else{
+            //获取文章列表
+            var pageNo = 2001;//获取分类下所有文章列表，通过后台判断pageNo > 2000 来实现
+            ArticleService.getArticleList(suplm,module,sublm, pageNo).then(function(data){
+              //$scope.articles = data;
+              //console.log(data);
+              if (data.length > 0) {
+                angular.forEach(data, function(docData){
+                  //console.log(docData);
+                  var lastPosition = -2;//获取文章详情，通过后台判断lastPosition=-2时不进行分段加载
+                  ArticleService.getArticle(docData.docid,lastPosition).then(function(data1){
+                    var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
+                    //TODO 去除html标签 存入字段
+                    var zw_remove_html = data1.tZw.replace(/<[^>]+>/g,"");//去掉所有的html标记
+                    zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
+                    zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
+                    zw_remove_html = zw_remove_html.replace(/(\n)+|(\r\n)+/g, "");//去除换行
+                    //console.log(zw_remove_html);
+                    var parameters = [docData.docid,docData.lmId,docData.suplm,docData.lm,docData.sublm,docData.tBt,data1.tZw,zw_remove_html,docData.tDate];
+                    
+                    DBA.executeSql(insertSql,parameters);
+                  },function(err){
+                    console.log("doc更新失败");
+                    $ionicLoading.show({
+                      template: "同步失败"
+                    });
+                  });  
+                });
+                //console.log(docListData.length);                
+              };
+            },function(err){
+                console.log("doclist更新失败");
+                $ionicLoading.show({
+                    template: "同步失败"
+                  });
+                });           
+        };        
+    },function(err){
+      console.log("module更新失败");
+      $ionicLoading.show({
+        template: "同步失败"
+      });
+    });
+  }
+
+  /**同步云端数据**/
   $scope.downloadData = function() {
     //TODO
     var downloadPopup = $ionicPopup.show({
-      template: '正在研发...',
+      template: '正在同步...',
       title: '同步云端数据'
     });
+
+    //获取目录和文章
+    getAllModuleAndDocList('执法工作手册','','');
+    getAllModuleAndDocList('常用法律法规','','');
+
     downloadPopup.then(function(res) {
-      console.log('downloadData!'+ res);
+      console.log('downloadData!');
+      $ionicLoading.show({
+          template: "同步完成"
+      });
+      $timeout(function() {
+          $ionicLoading.hide();
+      }, 1000);
     });
+
     $timeout(function() {
       downloadPopup.close(); //close the popup after 3 seconds for some reason
-    }, 2000);
+    }, 5000);
   };
 
   $scope.update = function() {
