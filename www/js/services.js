@@ -19,7 +19,6 @@ angular.module('starter.services', [])
           q.reject(error);
         });
     });
-    //console.log("----db search");
     return q.promise;
   }
 
@@ -109,7 +108,6 @@ angular.module('starter.services', [])
 /**文章service**/
 .factory('ArticleService',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
 
-  //var pageNo = 1;
   var service = {    // our factory definition
 
     /**获取列表**/
@@ -177,7 +175,7 @@ angular.module('starter.services', [])
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
+        params: {'id':docid,'deviceId':$rootScope.myIMEI,'lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId

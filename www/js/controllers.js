@@ -2,18 +2,6 @@ angular.module('starter.controllers', [])
 
 .controller('TabCtrl',function($scope,DBA){
 
-  //var db = $cordovaSQLite.openDB({ name: "my.db" });
-
-  // for opening a background db:
-  //var db = $cordovaSQLite.openDB({ name: "my.db", bgType: 1 });
-  //console.log("db=" + db);
-  //var query = "select * from team";
-  //DBA.executeSql(query);
-
-  //var insertSql = "INSERT INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,tDate) VALUES (?,?,?,?,?,?,?,?)";
-  //var parameters = ['1','1','1','1','1','1','1','1'];
-  //DBA.executeSql(insertSql,parameters);
-
   $scope.onFolderSelect = function(index){
 
   }
@@ -588,6 +576,9 @@ angular.module('starter.controllers', [])
                   $ionicLoading.show({
                     template: "同步失败"
                   });
+                  $timeout(function() {
+                    $ionicLoading.hide();
+                  }, 1000);
                 });
             });
           }
@@ -596,6 +587,9 @@ angular.module('starter.controllers', [])
               $ionicLoading.show({
                   template: "同步失败"
               });
+              $timeout(function() {
+                $ionicLoading.hide();
+              }, 1000);
           });
       }
 
@@ -604,41 +598,19 @@ angular.module('starter.controllers', [])
       $ionicLoading.show({
         template: "同步失败"
       });
+      $timeout(function() {
+        $ionicLoading.hide();
+      }, 1000);
     });
-
-    /*$ionicLoading.show({
-     template: suplm + "，同步成功"
-    });*/
-    /*$timeout(function() {
-      $ionicLoading.hide();
-    }, 1000);*/
   }
 
   /**同步云端数据**/
   $scope.downloadData = function() {
-    //TODO
-    /*var downloadPopup = $ionicPopup.show({
-      template: '正在同步...',
-      title: '同步云端数据'
-    });*/
 
     //获取目录和文章
     getAllModuleAndDocList('执法工作手册','','');
     getAllModuleAndDocList('常用法律法规','','');
 
-    /*downloadPopup.then(function(res) {
-      console.log('downloadData!');
-      $ionicLoading.show({
-          template: "同步完成"
-      });
-      $timeout(function() {
-          $ionicLoading.hide();
-      }, 1000);
-    });
-
-    $timeout(function() {
-      downloadPopup.close(); //close the popup after 3 seconds for some reason
-    }, 5000);*/
   };
 
   $scope.update = function() {
@@ -793,7 +765,7 @@ angular.module('starter.controllers', [])
   $scope.testUpdate = function(){
     $ionicLoading.show({
         template: "正在连接..."
-      });
+    });
     //$ionicTabsDelegate.select(index);
     $scope.requestUrl = appConfig.url + "/update";
     $scope.requestParams = "version=" + $rootScope.versionName;
