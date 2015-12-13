@@ -9,8 +9,7 @@ var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
         //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
-        //"url": "http://192.168.1.100:8080",//本地
-        "url": "http://10.11.222.218:8080",//本地2
+        "url": "http://192.168.1.109:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
         //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//appid名字
@@ -73,7 +72,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       db = $cordovaSQLite.openDB(appConfig.dbName);
     }else{
 
-      db = window.openDatabase(appConfig.dbName, "1.0", "My app", -1);
+      db = window.openDatabase(appConfig.dbName, "1.0", "jwscdb", -1);
     }
     var createDocTable = "CREATE TABLE IF NOT EXISTS doc (docid integer primary key, lmId integer,suplm varchar(200),lm varchar(512),sublm varchar(50),tBt varchar(512),tZw text, zwText text,tDate varchar(20))";
     var createModuleTable = "CREATE TABLE IF NOT EXISTS moduleName (id integer primary key, moduleid varchar(50),supModuleName varchar(200),moduleName varchar(200),subModuleName varchar(200))";     

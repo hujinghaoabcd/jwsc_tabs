@@ -48,7 +48,7 @@ angular.module('starter.services', [])
 
   return {
     /**获取分类列表**/
-    getFolderList : function(supModule, module, subModule) {
+    getFolderList : function(supModule, module, subModule, isSysn) {
 
       var defer = $q.defer();
         $http({
@@ -62,36 +62,44 @@ angular.module('starter.services', [])
           cache: $rootScope.useCache
         }).success(function(data){
           //console.log(data.result);
-          defer.resolve(data.result);
-        }).error(function(err){
-          console.log("fail to http POST module, start get data by local db");
-          //网络获取失败，从本地获取数据
-          
-          
-          console.log(supModule + "|" + module + "|" + subModule);
-          if (supModule != '' && module !== '' && subModule != '') {
-            defer.resolve([]);
+          if(data.status == 'FAIL'){//后台返回FAIL
+            defer.reject(data.status);
           }else{
-            var selectSql = "select id, moduleid, supModuleName, moduleName, subModuleName from moduleName where supModuleName = ? ";
-            var parameters = [supModule];
+            defer.resolve(data.result);
+          }
+        }).error(function(err){
+          if (isSysn == true) {//同步时直接返回
+            defer.reject(err);
+          }else{
+            console.log("fail to http POST module, start get data by local db");
+            //网络获取失败，从本地获取数据
 
-            if (supModule != '' && module !== '' && subModule == '') {
-              selectSql += " and moduleName = ? and subModuleName !=''";
-              parameters.push(module);
+            console.log(supModule + "|" + module + "|" + subModule);
+            if (supModule != '' && module !== '' && subModule != '') {
+              defer.resolve([]);
+            }else{
+              var selectSql = "select id, moduleid, supModuleName, moduleName, subModuleName from moduleName where supModuleName = ? ";
+              var parameters = [supModule];
+
+              if (supModule != '' && module !== '' && subModule == '') {
+                selectSql += " and moduleName = ? and subModuleName !=''";
+                parameters.push(module);
+              }
+              else if (supModule != '' && module === '') {
+                selectSql += " and moduleName != '' and subModuleName =''";
+              };
+              console.log(selectSql);
+              console.log(parameters);
+              DBA.executeSql(selectSql,parameters).then(function(result){
+                //console.log(result);
+                defer.resolve(DBA.getAll(result));
+              },function(err){
+                console.log("DBA err");
+                defer.reject(err);
+              })
             }
-            else if (supModule != '' && module === '') {
-              selectSql += " and moduleName != '' and subModuleName =''";
-            };
-            console.log(selectSql);
-            console.log(parameters);
-            DBA.executeSql(selectSql,parameters).then(function(result){
-              //console.log(result);
-              defer.resolve(DBA.getAll(result));
-            },function(err){
-              console.log("DBA err");
-              defer.reject(err);
-            })
-          }      
+          }
+
         });
       return defer.promise;
     }
@@ -105,7 +113,7 @@ angular.module('starter.services', [])
   var service = {    // our factory definition
 
     /**获取列表**/
-    getArticleList : function(supLm, lm, subLm, pageNo) {
+    getArticleList : function(supLm, lm, subLm, pageNo, isSysn) {
       var defer = $q.defer();
         $http({
           method: "post",
@@ -118,44 +126,52 @@ angular.module('starter.services', [])
           cache: $rootScope.useCache
         }).success(function(data){
           //console.log(data.result);
-          defer.resolve(data.result);
-        }).error(function(err){
-          console.log("fail to http POST doclist, start get data by local");
-
-          var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where suplm = ?"
-          var parameters = [supLm];
-
-          var size = 10;//size:每页显示条数，index页码
-          var start = 0;
-          start = size * (pageNo -1);
-          if (subLm !=='') {
-            selectSql += " and lm = ? and sublm = ?";
-            parameters.push(lm);
-            parameters.push(subLm);
+          if(data.status == 'FAIL'){//后台返回FAIL
+            defer.reject(data.status);
+          }else{
+            defer.resolve(data.result);
           }
-          else {
-            selectSql += " and lm = ? and sublm = ''";
-            parameters.push(lm);
-          };
-          
-          parameters.push(size);
-          parameters.push(start);
-          selectSql += " order by tDate desc limit ? offset ?";//offset代表从第几条记录“之后“开始查询，limit表明查询多少条结果
-
-          console.log(selectSql);
-          console.log(parameters);
-          DBA.executeSql(selectSql,parameters).then(function(result){
-            //console.log(result);
-            defer.resolve(DBA.getAll(result));
-          },function(err){
-            console.log("DBA err");
+        }).error(function(err){
+          if (isSysn == true) {//同步时直接返回
             defer.reject(err);
-          });
+          }else{
+            console.log("fail to http POST doclist, start get data by local");
+
+            var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where suplm = ?"
+            var parameters = [supLm];
+
+            var size = 10;//size:每页显示条数，index页码
+            var start = 0;
+            start = size * (pageNo -1);
+            if (subLm !=='') {
+              selectSql += " and lm = ? and sublm = ?";
+              parameters.push(lm);
+              parameters.push(subLm);
+            }
+            else {
+              selectSql += " and lm = ? and sublm = ''";
+              parameters.push(lm);
+            };
+
+            parameters.push(size);
+            parameters.push(start);
+            selectSql += " order by tDate desc limit ? offset ?";//offset代表从第几条记录“之后“开始查询，limit表明查询多少条结果
+
+            console.log(selectSql);
+            console.log(parameters);
+            DBA.executeSql(selectSql,parameters).then(function(result){
+              //console.log(result);
+              defer.resolve(DBA.getAll(result));
+            },function(err){
+              console.log("DBA err");
+              defer.reject(err);
+            });
+          }
         });
       return defer.promise;
     },
     /** 获取详细内容 **/
-    getArticle :function(docid,lastPosition){
+    getArticle :function(docid,lastPosition, isSysn){
       //console.log(docid)
       var defer = $q.defer();
       $http({
@@ -175,23 +191,27 @@ angular.module('starter.services', [])
           defer.resolve(data.result);
         }
        }).error(function (err) {
-        console.log("fail to http POST doc, , start get data by local");
+        if (isSysn == true) {//同步时直接返回
+            defer.reject(err);
+        }else{
+          console.log("fail to http POST doc, , start get data by local");
 
-        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
-        var parameters = [docid];
+          var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
+          var parameters = [docid];
 
-        console.log(selectSql);
-        console.log(parameters);
-        DBA.executeSql(selectSql,parameters).then(function(result){
-          //console.log(result);
-          var resultObj = DBA.getById(result);
-          resultObj['lastPosition'] = -1;
-          
-          defer.resolve(resultObj);
-        },function(err){
-          console.log("DBA err");
-          defer.reject(err);
-        });
+          console.log(selectSql);
+          console.log(parameters);
+          DBA.executeSql(selectSql,parameters).then(function(result){
+            //console.log(result);
+            var resultObj = DBA.getById(result);
+            resultObj['lastPosition'] = -1;
+
+            defer.resolve(resultObj);
+          },function(err){
+            console.log("DBA err");
+            defer.reject(err);
+          });
+        }
        });
      return defer.promise;
     },
@@ -209,12 +229,16 @@ angular.module('starter.services', [])
         },
         cache: $rootScope.useCache
       }).success(function (data) {
-        defer.resolve(data.result);
+        if(data.status == 'FAIL'){//后台返回FAIL
+          defer.reject(data.status);
+        }else{
+          defer.resolve(data.result);
+        }
       }).error(function (err) {
         console.log("fail to http POST search, start get data by local");
 
         var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate from doc where zwText like ?";
-        
+
         var parameters = ["%" + val + "%"];
         DBA.executeSql(selectSql,parameters).then(function(result){
           //console.log(result.rows);
@@ -263,7 +287,11 @@ angular.module('starter.services', [])
           },
           cache: $rootScope.useCache
         }).success(function (data){
+          if(data.status == 'FAIL'){//后台返回FAIL
+            defer.reject(data.status);
+          }else{
             defer.resolve(data.status);
+          }
         }).error(function (err){
           console.log("fail to http POST /log");
           defer.reject(err);
@@ -291,7 +319,11 @@ angular.module('starter.services', [])
           },
           cache: $rootScope.useCache
         }).success(function (data){
-            defer.resolve(data);
+          if(data.status == 'FAIL'){//后台返回FAIL
+            defer.reject(data.status);
+          }else{
+            defer.resolve(data.result);
+          }
         }).error(function (err){
           console.log("fail to http POST /update");
           defer.reject(err);
@@ -350,6 +382,7 @@ angular.module('starter.services', [])
               });
           } else {
               // 取消更新
+            console.log("取消更新")
           }
       });
     }

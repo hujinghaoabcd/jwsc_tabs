@@ -71,7 +71,7 @@ angular.module('starter.controllers', [])
   $scope.getModule();
 
   $scope.doRefresh = function(){
-    
+
     if ($scope.searchFlag) {
       $scope.$broadcast('scroll.refreshComplete');
       return;
@@ -147,7 +147,7 @@ angular.module('starter.controllers', [])
     //$rootScope.query= query;
   };
 
-  
+
   $scope.isCleanButton = false;
   $scope.focus = function(){
     $scope.isCleanButton = true;
@@ -252,7 +252,7 @@ angular.module('starter.controllers', [])
   });
 
   $scope.loadMore = function(docid){
- 
+
     ArticleService.getArticle(docid,$scope.lastPosition).then(function(data){
 
       $scope.article.tZw += data.tZw;
@@ -410,7 +410,7 @@ angular.module('starter.controllers', [])
 
   $scope.clearSearch = function(){
     $scope.isCleanButton = false;
-    
+
     $scope.searchFlag = false;
     $scope.searchData.query = "";
     if (subModule !== '') {//最后一级目录，直接加载文章
@@ -439,7 +439,7 @@ angular.module('starter.controllers', [])
     //$scope.islastFolder = false;
     //$scope.searchFlag = false;
     //supModule = "常用法律法规";
-    //module = ""; 
+    //module = "";
     //subModule = "";
     //$scope.getModule();
   });
@@ -488,19 +488,19 @@ angular.module('starter.controllers', [])
 
   //退出提示
   function confirmPopup(){
-    var confirmPopup = $ionicPopup.confirm({  
-        title: '<strong>退出应用</strong>',  
-        template: '你确定要退出应用吗？',  
-        okText: '退出',  
-        cancelText: '取消'  
-    });  
+    var confirmPopup = $ionicPopup.confirm({
+        title: '<strong>退出应用</strong>',
+        template: '你确定要退出应用吗？',
+        okText: '退出',
+        cancelText: '取消'
+    });
 
-    confirmPopup.then(function (res) {  
-        if (res) {  
-            ionic.Platform.exitApp();  
-        } else {  
-            // Don't close  
-        }  
+    confirmPopup.then(function (res) {
+        if (res) {
+            ionic.Platform.exitApp();
+        } else {
+            // Don't close
+        }
     });
   }
 
@@ -512,79 +512,121 @@ angular.module('starter.controllers', [])
 
   /**获取所有目录和文章**/
   function getAllModuleAndDocList(suplm,module,sublm){
-    FolderService.getFolderList(suplm,module,sublm).then(function(data){        
-        //moduleList = data;
-        //console.log(moduleList);
-        if (data.length > 0) {
-          angular.forEach(data, function(moduleData){
-            //console.log(moduleData);
-            //moduleList.push(data1);
-            //TODO插入SQLite
-            var insertSql = "replace INTO moduleName (id, moduleid, supModuleName, moduleName, subModuleName) VALUES (?,?,?,?,?)";
-            var parameters = [moduleData.id,moduleData.moduleid,moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName];
-            DBA.executeSql(insertSql,parameters);
-            //遍历下一个目录
-            getAllModuleAndDocList(moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName);
 
-          })
-        }else{
-            //获取文章列表
-            var pageNo = 2001;//获取分类下所有文章列表，通过后台判断pageNo > 2000 来实现
-            ArticleService.getArticleList(suplm,module,sublm, pageNo).then(function(data){
-              //$scope.articles = data;
-              //console.log(data);
-              if (data.length > 0) {
-                angular.forEach(data, function(docData){
-                  //console.log(docData);
-                  var lastPosition = -2;//获取文章详情，通过后台判断lastPosition=-2时不进行分段加载
-                  ArticleService.getArticle(docData.docid,lastPosition).then(function(data1){
-                    var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
-                    //TODO 去除html标签 存入字段
-                    var zw_remove_html = data1.tZw.replace(/<[^>]+>/g,"");//去掉所有的html标记
-                    zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
-                    zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
-                    zw_remove_html = zw_remove_html.replace(/(\n)+|(\r\n)+/g, "");//去除换行
-                    //console.log(zw_remove_html);
-                    var parameters = [docData.docid,docData.lmId,docData.suplm,docData.lm,docData.sublm,docData.tBt,data1.tZw,zw_remove_html,docData.tDate];
-                    
-                    DBA.executeSql(insertSql,parameters);
-                  },function(err){
-                    console.log("doc更新失败");
-                    $ionicLoading.show({
-                      template: "同步失败"
-                    });
-                  });  
-                });
-                //console.log(docListData.length);                
-              };
-            },function(err){
-                console.log("doclist更新失败");
+    $ionicLoading.show({
+      template: "正在同步..."
+    });
+    FolderService.getFolderList(suplm,module,sublm,true).then(function(data){
+      //console.log(data);
+      $ionicLoading.show({
+        template: "正在同步..."
+      });
+      if (data.length > 0) {
+        angular.forEach(data, function(moduleData){
+          $ionicLoading.show({
+            template: "正在同步..."
+          });
+          //TODO插入SQLite
+          var insertSql = "replace INTO moduleName (id, moduleid, supModuleName, moduleName, subModuleName) VALUES (?,?,?,?,?)";
+          var parameters = [moduleData.id,moduleData.moduleid,moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName];
+          DBA.executeSql(insertSql,parameters);
+          //遍历下一个目录
+          getAllModuleAndDocList(moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName);
+        })
+      }else{
+          $ionicLoading.show({
+            template: "正在同步..."
+          });
+
+          //获取文章列表
+          var pageNo = 2001;//获取分类下所有文章列表，通过后台判断pageNo > 2000 来实现
+          ArticleService.getArticleList(suplm,module,sublm, pageNo, true).then(function(data){
+            //console.log(data);
+            $ionicLoading.show({
+              template: "正在同步..."
+            });
+            if (data.length > 0) {
+              var len = data.length;
+              var i = 0;
+              angular.forEach(data, function(docData){
                 $ionicLoading.show({
+                  template: "正在同步..."
+                });
+                var lastPosition = -2;//获取文章详情，通过后台判断lastPosition=-2时不进行分段加载
+                ArticleService.getArticle(docData.docid,lastPosition,true).then(function(data1){
+
+                  //显示进度
+                  i++;
+                  var downloadProgress = Math.round((i / len) * 100);
+                  var showText = suplm + "/" + module;
+                  if (sublm !== '') {
+                    showText += "/" + sublm;
+                  };
+                  showText += "，已同步" + downloadProgress + "%";
+                  //console.log(showText);
+                  $ionicLoading.show({
+                    template:  showText
+                  });
+
+                  var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
+                  //TODO 去除html标签 存入字段
+                  var zw_remove_html = data1.tZw.replace(/<[^>]+>/g,"");//去掉所有的html标记
+                  zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
+                  zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
+                  zw_remove_html = zw_remove_html.replace(/(\n)+|(\r\n)+/g, "");//去除换行
+                  //console.log(zw_remove_html);
+                  var parameters = [docData.docid,docData.lmId,docData.suplm,docData.lm,docData.sublm,docData.tBt,data1.tZw,zw_remove_html,docData.tDate];
+                  DBA.executeSql(insertSql,parameters);
+
+                  //隐藏
+                  if(downloadProgress > 99){
+                    $ionicLoading.hide();
+                  }
+                  //console.log("----i=" + i);
+                },function(err){
+                  console.log("doc更新失败");
+                  $ionicLoading.show({
                     template: "同步失败"
                   });
-                });           
-        };        
+                });
+            });
+          }
+        },function(err){
+              console.log("doclist更新失败");
+              $ionicLoading.show({
+                  template: "同步失败"
+              });
+          });
+      }
+
     },function(err){
       console.log("module更新失败");
       $ionicLoading.show({
         template: "同步失败"
       });
     });
+
+    /*$ionicLoading.show({
+     template: suplm + "，同步成功"
+    });*/
+    /*$timeout(function() {
+      $ionicLoading.hide();
+    }, 1000);*/
   }
 
   /**同步云端数据**/
   $scope.downloadData = function() {
     //TODO
-    var downloadPopup = $ionicPopup.show({
+    /*var downloadPopup = $ionicPopup.show({
       template: '正在同步...',
       title: '同步云端数据'
-    });
+    });*/
 
     //获取目录和文章
     getAllModuleAndDocList('执法工作手册','','');
     getAllModuleAndDocList('常用法律法规','','');
 
-    downloadPopup.then(function(res) {
+    /*downloadPopup.then(function(res) {
       console.log('downloadData!');
       $ionicLoading.show({
           template: "同步完成"
@@ -596,7 +638,7 @@ angular.module('starter.controllers', [])
 
     $timeout(function() {
       downloadPopup.close(); //close the popup after 3 seconds for some reason
-    }, 5000);
+    }, 5000);*/
   };
 
   $scope.update = function() {
@@ -611,7 +653,7 @@ angular.module('starter.controllers', [])
     });
 
     updatePopup.then(function(res) {
-          
+
       UpdateService.updateApp().then(function(data){
         console.log("request update interface response data:");
         console.log(data);
@@ -619,7 +661,7 @@ angular.module('starter.controllers', [])
           serverVersion = data.content.packageVersion;//应用版本号
           apkFilePath = data.content.pkgFilePath;//更新地址
           updateContext = data.content.packageDesc;//应用描述
-        };          
+        };
       },function(err){
         console.log("request update interface error:");
         console.log(err);
@@ -637,7 +679,7 @@ angular.module('starter.controllers', [])
         updatePopup.close();
         UpdateService.popupUpdateView(apkFilePath,updateContext);
       }
-      
+
     });
     $timeout(function() {
       updatePopup.close(); //close the popup after 3 seconds for some reason
@@ -726,7 +768,7 @@ angular.module('starter.controllers', [])
         $scope.status = data.status;
         $scope.errorMsg = data.message;
         console.log("logs=" + data);
-            
+
             //$scope.hide();
         },function(err){
             $scope.result = err;
