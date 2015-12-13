@@ -87,8 +87,8 @@ angular.module('starter.services', [])
               else if (supModule != '' && module === '') {
                 selectSql += " and moduleName != '' and subModuleName =''";
               };
-              console.log(selectSql);
-              console.log(parameters);
+              //console.log(selectSql);
+              //console.log(parameters);
               DBA.executeSql(selectSql,parameters).then(function(result){
                 //console.log(result);
                 defer.resolve(DBA.getAll(result));
@@ -104,6 +104,143 @@ angular.module('starter.services', [])
     }
   };
 })
+
+  /** 查询本地数据库**/
+  .factory('FolderServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA){
+    return{
+      /**获取本地分类列表**/
+      getFolderList : function(supModule, module, subModule) {
+        console.log("start get data by local. " + supModule + "|" + module + "|" + subModule);
+
+        var defer = $q.defer();
+        if (supModule != '' && module !== '' && subModule != '') {
+          defer.resolve([]);
+        }else{
+          var selectSql = "select id, moduleid, supModuleName, moduleName, subModuleName from moduleName where supModuleName = ? ";
+          var parameters = [supModule];
+
+          if (supModule != '' && module !== '' && subModule == '') {
+            selectSql += " and moduleName = ? and subModuleName !=''";
+            parameters.push(module);
+          }
+          else if (supModule != '' && module === '') {
+            selectSql += " and moduleName != '' and subModuleName =''";
+          };
+          //console.log(selectSql);
+          //console.log(parameters);
+          DBA.executeSql(selectSql,parameters).then(function(result){
+            //console.log(result);
+            defer.resolve(DBA.getAll(result));
+          },function(err){
+            console.log("DBA err");
+            defer.reject(err);
+          })
+        }
+        return defer.promise;
+      }
+    }
+  })
+
+  /** 本地文章service**/
+  .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
+    var service = {    // our factory definition
+
+      /**获取列表**/
+      getArticleList : function(supLm, lm, subLm, pageNo) {
+        var defer = $q.defer();
+        console.log("start get data by local");
+
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where suplm = ?"
+        var parameters = [supLm];
+
+        var size = 10;//size:每页显示条数，index页码
+        var start = 0;
+        start = size * (pageNo -1);
+        if (subLm !=='') {
+          selectSql += " and lm = ? and sublm = ?";
+          parameters.push(lm);
+          parameters.push(subLm);
+        }
+        else {
+          selectSql += " and lm = ? and sublm = ''";
+          parameters.push(lm);
+        };
+
+        parameters.push(size);
+        parameters.push(start);
+        selectSql += " order by tDate desc limit ? offset ?";//offset代表从第几条记录“之后“开始查询，limit表明查询多少条结果
+
+        //console.log(selectSql);
+        //console.log(parameters);
+        DBA.executeSql(selectSql,parameters).then(function(result){
+          //console.log(result);
+          defer.resolve(DBA.getAll(result));
+        },function(err){
+          console.log("DBA err");
+          defer.reject(err);
+        });
+        return defer.promise;
+      },
+      /** 获取详细内容 **/
+      getArticle :function(docid){
+        //console.log(docid)
+        var defer = $q.defer();
+        console.log("start get data by local");
+
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
+        var parameters = [docid];
+
+        //console.log(selectSql);
+        //console.log(parameters);
+        DBA.executeSql(selectSql,parameters).then(function(result){
+          //console.log(result);
+          var resultObj = DBA.getById(result);
+          resultObj['lastPosition'] = -1;
+
+          defer.resolve(resultObj);
+        },function(err){
+          console.log("DBA err");
+          defer.reject(err);
+        });
+        return defer.promise;
+      },
+
+      /** 搜索 **/
+      search : function(val){
+        var defer = $q.defer();
+
+        console.log("start get data by local");
+
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate from doc where zwText like ?";
+
+        var parameters = ["%" + val + "%"];
+        DBA.executeSql(selectSql,parameters).then(function(result){
+          //console.log(result.rows);
+          //TODO 处理副标题tm字段
+          var output = [];
+          var highlighter = "<span style=\"color:red;\">" + val+ "</span>";
+          for (var i = 0; i < result.rows.length; i++) {
+            //console.log(result.rows.item(i));
+            var temp = result.rows.item(i);
+            //console.log(temp.zwText);
+            var index = temp.zwText.indexOf(val);
+            var lm = temp.zwText.substring(index - 50, index + 100);//截取一段字符
+            temp.lm = lm.replace(val,highlighter);
+            //console.log(temp);
+            output.push(temp);
+          }
+
+          defer.resolve(output);
+        },function(err){
+          console.log("DBA err");
+          defer.reject(err);
+        });
+
+        return defer.promise;
+      }
+    };
+    return service;
+  })
 
 /**文章service**/
 .factory('ArticleService',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
@@ -155,8 +292,8 @@ angular.module('starter.services', [])
             parameters.push(start);
             selectSql += " order by tDate desc limit ? offset ?";//offset代表从第几条记录“之后“开始查询，limit表明查询多少条结果
 
-            console.log(selectSql);
-            console.log(parameters);
+            //console.log(selectSql);
+            //console.log(parameters);
             DBA.executeSql(selectSql,parameters).then(function(result){
               //console.log(result);
               defer.resolve(DBA.getAll(result));
@@ -175,7 +312,7 @@ angular.module('starter.services', [])
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':docid,'deviceId':$rootScope.myIMEI,'lastPosition':lastPosition},
+        params: {'id':docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId
@@ -192,13 +329,13 @@ angular.module('starter.services', [])
         if (isSysn == true) {//同步时直接返回
             defer.reject(err);
         }else{
-          console.log("fail to http POST doc, , start get data by local");
+          console.log("fail to http POST doc, start get data by local");
 
           var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
           var parameters = [docid];
 
-          console.log(selectSql);
-          console.log(parameters);
+          //console.log(selectSql);
+          //console.log(parameters);
           DBA.executeSql(selectSql,parameters).then(function(result){
             //console.log(result);
             var resultObj = DBA.getById(result);

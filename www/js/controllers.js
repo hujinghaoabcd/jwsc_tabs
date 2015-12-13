@@ -17,7 +17,7 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, FolderService, ArticleService) {
+.controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, FolderServiceForLocal, ArticleServiceForLocal) {
 
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
 
@@ -35,12 +35,14 @@ angular.module('starter.controllers', [])
   console.log('supModule='+ supModule + '. module='+ module + '. subModule='+ subModule);
 
   $scope.getModule =function(){
-    FolderService.getFolderList(supModule, module, subModule).then(function(data){
+
+    FolderServiceForLocal.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
-      //console.log("modulesData=" + data);
-      if (data.length == 0) {
+      console.log("modulesData=" );
+      console.log(data);
+      if (data.length == 0 && module !== '') {
         $scope.islastFolder = true;
-        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+        ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
             //console.log("articlesData=" + data);
             if (data.length == 0) {
@@ -60,11 +62,11 @@ angular.module('starter.controllers', [])
 
   $scope.doRefresh = function(){
 
+    console.log($scope.searchFlag);
     if ($scope.searchFlag) {
       $scope.$broadcast('scroll.refreshComplete');
       return;
     };
-
     $rootScope.folderCurrentPage = 1;
     $scope.noMoreAvailable = false;
     $scope.getModule();
@@ -73,11 +75,11 @@ angular.module('starter.controllers', [])
   };
 
   $scope.loadMore = function(){
-    //console.log("下一页");
+    console.log("下一页");
     //$scope.show();
     var currentPage = $rootScope.folderCurrentPage;
     $rootScope.folderCurrentPage =  currentPage + 1;
-    ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+    ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
       console.log('$scope.articles='+$scope.articles);
       $scope.articles = $scope.articles.concat(data);
       if (data.length == 0) {
@@ -104,7 +106,7 @@ angular.module('starter.controllers', [])
         $scope.islastFolder = true;
 
         $rootScope.folderCurrentPage = 1;
-        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+        ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
@@ -124,7 +126,7 @@ angular.module('starter.controllers', [])
     if ($event.keyCode !== 13) {//非搜索按钮，则返回
       return;
     };
-    ArticleService.search($scope.searchData.query).then(function(data){
+    ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
 
       $scope.articles = data;
       $scope.searchFlag = true;
@@ -158,7 +160,7 @@ angular.module('starter.controllers', [])
         $scope.islastFolder = true;
 
         $rootScope.folderCurrentPage = 1;
-        ArticleService.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
+        ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
@@ -195,7 +197,7 @@ angular.module('starter.controllers', [])
     };
 }])
 
-.controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, $stateParams, ArticleService) {
+.controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, $stateParams, ArticleServiceForLocal) {
 
   $scope.lastPosition = "";
   $scope.noMoreAvailable = false;
@@ -223,7 +225,7 @@ angular.module('starter.controllers', [])
       template: "正在加载..."
   });
 
-  ArticleService.getArticle($stateParams.docid,$scope.lastPosition).then(function(data){
+  ArticleServiceForLocal.getArticle($stateParams.docid,$scope.lastPosition).then(function(data){
     $scope.article = data;
     $scope.lastPosition = data.lastPosition;
     $ionicLoading.hide();
@@ -241,7 +243,7 @@ angular.module('starter.controllers', [])
 
   $scope.loadMore = function(docid){
 
-    ArticleService.getArticle(docid,$scope.lastPosition).then(function(data){
+    ArticleServiceForLocal.getArticle(docid,$scope.lastPosition).then(function(data){
 
       $scope.article.tZw += data.tZw;
       $scope.lastPosition = data.lastPosition;
@@ -261,7 +263,7 @@ angular.module('starter.controllers', [])
 })
 
 
-.controller('LawsCtrl', function($scope, $stateParams, $rootScope, FolderService, ArticleService) {
+.controller('LawsCtrl', function($scope, $stateParams, $rootScope, FolderServiceForLocal, ArticleServiceForLocal) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -281,15 +283,15 @@ angular.module('starter.controllers', [])
   $rootScope.lawsCurrentPage = 1;
 
   $scope.getModule =function(){
-    FolderService.getFolderList(supModule, module, subModule).then(function(data){
+    FolderServiceForLocal.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
       //console.log(data);
       //console.log(data.length);
-      if (data.length == 0) {
+      if (data.length == 0 && module !== '') {
         $scope.islastFolder = true;
-        ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
+        ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
             $scope.articles = data;
-            if (data.length == 0) {
+            if (data.length == 0 ) {
               $scope.noMoreAvailable = true;
             };
             //$scope.hide();
@@ -330,7 +332,7 @@ angular.module('starter.controllers', [])
     //$scope.show();
     var currentPage = $rootScope.lawsCurrentPage;
     $rootScope.lawsCurrentPage =  currentPage + 1;
-    ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
+    ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
       $scope.articles = $scope.articles.concat(data);
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
@@ -355,7 +357,7 @@ angular.module('starter.controllers', [])
       if (subModule !== '') {//最后一级目录，直接加载文章
         $scope.islastFolder = true;
         $rootScope.lawsCurrentPage = 1;
-        ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
+        ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
             $scope.articles = data;
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
@@ -375,7 +377,7 @@ angular.module('starter.controllers', [])
     if ($event.keyCode !== 13) {//非搜索按钮，则返回
       return;
     };
-    ArticleService.search($scope.searchData.query).then(function(data){
+    ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
 
       $scope.articles = data;
       $scope.searchFlag = true;
@@ -404,7 +406,7 @@ angular.module('starter.controllers', [])
     if (subModule !== '') {//最后一级目录，直接加载文章
         $scope.islastFolder = true;
         $rootScope.lawsCurrentPage = 1;
-        ArticleService.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
+        ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
             $scope.articles = data;
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
@@ -604,7 +606,7 @@ angular.module('starter.controllers', [])
     });
   }
 
-  /**同步云端数据**/
+  /**同步云端数据按钮**/
   $scope.downloadData = function() {
 
     //获取目录和文章
@@ -665,7 +667,7 @@ angular.module('starter.controllers', [])
     //$ionicTabsDelegate.select(index);
     $scope.requestUrl = appConfig.url + "/module";
     $scope.requestParams = "supModule=执法工作手册"
-    FolderService.getFolderList("执法工作手册", "", "").then(function(data){
+    FolderService.getFolderList("执法工作手册", "", "",true).then(function(data){
       $scope.result = data;
       $scope.status = data.status;
       $scope.errorMsg = data.message;
