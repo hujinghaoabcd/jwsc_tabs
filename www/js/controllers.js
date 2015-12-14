@@ -21,9 +21,7 @@ angular.module('starter.controllers', [])
 
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
 
-  //var defaultFatherId = $stateParams.folderId;
   $scope.islastFolder = false;
-  //$scope.titleName = '';
   $scope.noMoreAvailable = false;
   $rootScope.folderCurrentPage = 1;
   console.log('folderCurrentPage set='+ $rootScope.folderCurrentPage);
@@ -51,11 +49,8 @@ angular.module('starter.controllers', [])
             //$scope.hide();
         },function(){
             $scope.noMoreAvailable = true;
-            //$scope.hide();
-            //$scope.showAlert();
         });
       };
-      //$scope.hide();
     });
   };
   $scope.getModule();
@@ -85,13 +80,9 @@ angular.module('starter.controllers', [])
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
       };
-      //$scope.hide();
-      //console.log($scope.noMoreAvailable);
       $scope.$broadcast('scroll.infiniteScrollComplete');
     },function(){
       $scope.noMoreAvailable = true;
-      //$scope.hide();
-      //$scope.showAlert();
       $scope.$broadcast('scroll.infiniteScrollComplete');
     });
   };
@@ -132,9 +123,7 @@ angular.module('starter.controllers', [])
       $scope.searchFlag = true;
 
       $scope.islastFolder = true;
-      //console.log(data);
     });
-    //$rootScope.query= query;
   };
 
 
@@ -294,27 +283,18 @@ angular.module('starter.controllers', [])
             if (data.length == 0 ) {
               $scope.noMoreAvailable = true;
             };
-            //$scope.hide();
         },function(){
             $scope.noMoreAvailable = true;
-            //$scope.hide();
-            //$scope.showAlert();
         });
       };
-      //$scope.hide();
     },function(){
       $scope.noMoreAvailable = true;
-      //$scope.hide();
-      //$scope.showAlert();
     });
   };
   $scope.getModule();
 
   //所以页面都可下来刷新
   $scope.doRefresh = function(){
-    //console.log("刷新");
-    //$scope.show();
-    //console.log($scope.searchFlag);
     if ($scope.searchFlag) {
       //$scope.noMoreAvailable = true;
       $scope.$broadcast('scroll.refreshComplete');
@@ -328,8 +308,6 @@ angular.module('starter.controllers', [])
   };
 
   $scope.loadMore = function(){
-    //console.log("下一页");
-    //$scope.show();
     var currentPage = $rootScope.lawsCurrentPage;
     $rootScope.lawsCurrentPage =  currentPage + 1;
     ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.lawsCurrentPage).then(function(data){
@@ -337,20 +315,15 @@ angular.module('starter.controllers', [])
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
       };
-      //$scope.hide();
-      //console.log($scope.noMoreAvailable);
       $scope.$broadcast('scroll.infiniteScrollComplete');
     },function(){
       $scope.noMoreAvailable = true;
-      //$scope.hide();
-      //$scope.showAlert();
       $scope.$broadcast('scroll.infiniteScrollComplete');
     });
   };
 
   $scope.searchData = {'query':''};
   $scope.search = function($event){
-    //console.log('laws search val=', $scope.searchData.query);
     if($scope.searchData.query == undefined || $scope.searchData.query == ''){
       $scope.searchFlag = false;
       $scope.islastFolder = false;
@@ -383,7 +356,6 @@ angular.module('starter.controllers', [])
       $scope.searchFlag = true;
 
       $scope.islastFolder = true;
-      //console.log(data);
     });
   };
 
@@ -559,7 +531,7 @@ angular.module('starter.controllers', [])
                   });
 
                   var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
-                  //TODO 去除html标签 存入字段
+                  //去除html标签 存入字段
                   var zw_remove_html = data1.tZw.replace(/<[^>]+>/g,"");//去掉所有的html标记
                   zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
                   zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
@@ -664,7 +636,6 @@ angular.module('starter.controllers', [])
 .controller('InterfaceCtrl',function($scope,$http,$ionicLoading,$rootScope,FolderService,ArticleService,LogsService,UpdateService,appConfig){
 
   $scope.getModule = function(){
-    //$ionicTabsDelegate.select(index);
     $scope.requestUrl = appConfig.url + "/module";
     $scope.requestParams = "supModule=执法工作手册"
     FolderService.getFolderList("执法工作手册", "", "",true).then(function(data){

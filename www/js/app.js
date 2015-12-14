@@ -141,13 +141,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     //数据库内容为空，提示同步数据库
     var selectSql = "select count(1) as count from doc";
     DBA.executeSql(selectSql).then(function(result){
-      console.log(DBA.getById(result));
-      //alert(DBA.getById(result).count);
       var count = DBA.getById(result).count;
       if(count < 1){
         var alertPopup = $ionicPopup.alert({
-          title: '提示',
-          template: '本地数据为空。请在设置->同步云端数据，获取数据。',
+          title: '<b>本地数据为空！</b>',
+          template: '请在设置->同步云端数据，获取数据。同步完成后，下拉浏览最新数据。',
           okText:'确定'
         });
         alertPopup.then(function(res) {

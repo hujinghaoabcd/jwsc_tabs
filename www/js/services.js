@@ -215,8 +215,7 @@ angular.module('starter.services', [])
 
         var parameters = ["%" + val + "%"];
         DBA.executeSql(selectSql,parameters).then(function(result){
-          //console.log(result.rows);
-          //TODO 处理副标题tm字段
+          //处理副标题tm字段
           var output = [];
           var highlighter = "<span style=\"color:red;\">" + val+ "</span>";
           for (var i = 0; i < result.rows.length; i++) {
@@ -312,7 +311,7 @@ angular.module('starter.services', [])
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
+        params: {'id':docid,'deviceId':$rootScope.myIMEI,'lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId
@@ -376,8 +375,7 @@ angular.module('starter.services', [])
 
         var parameters = ["%" + val + "%"];
         DBA.executeSql(selectSql,parameters).then(function(result){
-          //console.log(result.rows);
-          //TODO 处理副标题tm字段
+          //处理副标题tm字段
           var output = [];
           var highlighter = "<span style=\"color:red;\">" + val+ "</span>";
           for (var i = 0; i < result.rows.length; i++) {
