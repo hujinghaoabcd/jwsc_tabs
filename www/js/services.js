@@ -142,7 +142,7 @@ angular.module('starter.services', [])
   })
 
   /** 本地文章service**/
-  .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
+  .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA){
     var service = {    // our factory definition
 
       /**获取列表**/
@@ -155,7 +155,9 @@ angular.module('starter.services', [])
 
         var size = 10;//size:每页显示条数，index页码
         var start = 0;
-        start = size * (pageNo -1);
+        if(pageNo > 1){
+          start = size * (pageNo -1) + 1;
+        }
         if (subLm !=='') {
           selectSql += " and lm = ? and sublm = ?";
           parameters.push(lm);
@@ -276,7 +278,9 @@ angular.module('starter.services', [])
 
             var size = 10;//size:每页显示条数，index页码
             var start = 0;
-            start = size * (pageNo -1);
+            if(pageNo > 1){
+              start = size * (pageNo -1) + 1;
+            }
             if (subLm !=='') {
               selectSql += " and lm = ? and sublm = ?";
               parameters.push(lm);
