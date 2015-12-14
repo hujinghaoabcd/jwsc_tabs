@@ -548,7 +548,7 @@ angular.module('starter.controllers', [])
                 },function(err){
                   console.log("doc更新失败");
                   $ionicLoading.show({
-                    template: "同步失败"
+                    template: "同步失败，请检查网络"
                   });
                   $timeout(function() {
                     $ionicLoading.hide();
@@ -559,7 +559,7 @@ angular.module('starter.controllers', [])
         },function(err){
               console.log("doclist更新失败");
               $ionicLoading.show({
-                  template: "同步失败"
+                  template: "同步失败，请检查网络"
               });
               $timeout(function() {
                 $ionicLoading.hide();
@@ -570,7 +570,7 @@ angular.module('starter.controllers', [])
     },function(err){
       console.log("module更新失败");
       $ionicLoading.show({
-        template: "同步失败"
+        template: "同步失败，请检查网络"
       });
       $timeout(function() {
         $ionicLoading.hide();
