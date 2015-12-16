@@ -443,12 +443,36 @@ angular.module('starter.services', [])
   $cordovaFileTransfer,$cordovaFileOpener2,appConfig){
 
   return {
-    /**更新**/
+    /**检查文章更新**/
+    updateCheck : function(lastDocId) {
+      var defer = $q.defer();
+      $http({
+        method: "post",
+        url: appConfig.url + "/update",
+        params: {'lastDocId':lastDocId},
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'appId': appConfig.appId
+        },
+        cache: $rootScope.useCache
+      }).success(function (data){
+        if(data.status == 'FAIL'){//后台返回FAIL
+          defer.reject(data.status);
+        }else{
+          defer.resolve(data.result);
+        }
+      }).error(function (err){
+        console.log("fail to http POST /update");
+        defer.reject(err);
+      });
+      return defer.promise;
+    },
+    /**更新APP**/
     updateApp : function() {
       var defer = $q.defer();
         $http({
           method: "post",
-          url: appConfig.url + "/update",
+          url: appConfig.url + "/AppUpdate",
           params: {'version':$rootScope.versionName},
           headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -462,7 +486,7 @@ angular.module('starter.services', [])
             defer.resolve(data.result);
           }
         }).error(function (err){
-          console.log("fail to http POST /update");
+          console.log("fail to http POST /AppUpdate");
           defer.reject(err);
         });
       return defer.promise;

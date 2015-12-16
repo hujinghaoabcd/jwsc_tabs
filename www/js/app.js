@@ -105,7 +105,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         updateContext = data.content.packageDesc;//应用描述
       };
     },function(err){
-      console.log("request update interface error");
+      console.log("request updateApp interface error");
     });
 
     //设置全局版本号信息
@@ -151,6 +151,25 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         alertPopup.then(function(res) {
           console.log('Thank you.');
         });
+      }else{
+        //检查是否有新增文章
+        var sql = "select count(docid) as docid from doc";
+        DBA.executeSql(sql).then(function(result){
+          var lastDocId = DBA.getById(result).docid;
+          UpdateService.updateCheck(lastDocId).then(function(result){
+            console.log("updateCheck result:" + result);
+            if(result == true){
+              var updatePopup = $ionicPopup.alert({
+                title: '<b>有文章更新！</b>',
+                template: '请在设置->同步云端数据，获取最新文章。',
+                okText:'确定'
+              });
+              updatePopup.then(function(res) {
+                console.log('success notice.');
+              });
+            }
+          })
+        })
       }
     })
   });

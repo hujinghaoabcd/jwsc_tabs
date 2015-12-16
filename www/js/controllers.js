@@ -581,10 +581,42 @@ angular.module('starter.controllers', [])
   /**同步云端数据按钮**/
   $scope.downloadData = function() {
 
-    //获取目录和文章
-    getAllModuleAndDocList('执法工作手册','','');
-    getAllModuleAndDocList('常用法律法规','','');
-
+    $ionicLoading.show({
+      template: "正在同步..."
+    });
+    var sql = "select count(docid) as docid from doc";
+    DBA.executeSql(sql).then(function(result){
+      var lastDocId = DBA.getById(result).docid;
+      console.log(lastDocId);
+      if(lastDocId !== null){
+        UpdateService.updateCheck(lastDocId).then(function(result){
+          console.log("updateCheck result:" + result);
+          if(result == true){
+            //获取目录和文章
+            getAllModuleAndDocList('执法工作手册','','');
+            getAllModuleAndDocList('常用法律法规','','');
+          }else{
+            $ionicLoading.show({
+              template: "已是最新数据"
+            });
+            $timeout(function() {
+              $ionicLoading.hide();
+            }, 2000);
+          }
+        },function(err){
+          $ionicLoading.show({
+            template: "同步失败，请检查网络"
+          });
+          $timeout(function() {
+            $ionicLoading.hide();
+          }, 2000);
+        })
+      }else{
+        //获取目录和文章
+        getAllModuleAndDocList('执法工作手册','','');
+        getAllModuleAndDocList('常用法律法规','','');
+      }
+    })
   };
 
   $scope.update = function() {
