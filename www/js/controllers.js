@@ -416,7 +416,7 @@ angular.module('starter.controllers', [])
   $scope.clean = function(){
      var myPopup = $ionicPopup.show({
       template: '正在清除缓存...',
-      title: '清除缓存'
+      title: '<b>清除缓存</b>'
     });
     myPopup.then(function(res) {
       console.log('clean!'+res);
