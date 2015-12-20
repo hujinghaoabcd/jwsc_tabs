@@ -1,6 +1,9 @@
 angular.module('starter.controllers', [])
 
-.controller('TabCtrl',function($scope,DBA){
+/**
+ * 控制tab模块
+ */
+.controller('TabCtrl',function($scope){
 
   $scope.onFolderSelect = function(index){
 
@@ -17,6 +20,75 @@ angular.module('starter.controllers', [])
 
 })
 
+/**
+ * 控制最新模块
+ */
+.controller('NewestCtrl',function($scope,ArticleServiceForLocal){
+
+    $scope.getNewestArticle = function(){
+      ArticleServiceForLocal.getNewestList().then(function(data){
+        $scope.articles = data;
+      })
+    }
+    $scope.getNewestArticle();
+
+    $scope.doRefresh = function(){
+
+      console.log($scope.searchFlag);
+      if ($scope.searchFlag) {
+        $scope.$broadcast('scroll.refreshComplete');
+        return;
+      };
+      $scope.noMoreAvailable = false;
+      $scope.getNewestArticle();
+
+      $scope.$broadcast('scroll.refreshComplete');
+    };
+
+    $scope.searchData = {'query':''};
+    $scope.search = function($event){
+      if($scope.searchData.query == undefined || $scope.searchData.query == ''){
+        $scope.searchFlag = false;
+        //$scope.islastFolder = false;
+        $scope.getNewestArticle();
+        return;
+      }
+      if ($event.keyCode !== 13) {//非搜索按钮，则返回
+        return;
+      };
+      ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
+
+        $scope.articles = data;
+        $scope.searchFlag = true;
+
+        //$scope.islastFolder = true;
+      })
+    }
+
+    $scope.isCleanButton = false;
+    $scope.focus = function(){
+      $scope.isCleanButton = true;
+      //$scope.islastFolder = false;
+      $scope.searchFlag = false;
+    };
+
+    $scope.onblur = function(){
+      //$scope.isCleanButton = false;
+      //$scope.searchData.query = "";
+    };
+
+    $scope.clearSearch = function(){
+      $scope.isCleanButton = false;
+      //$scope.islastFolder = false;
+      $scope.searchFlag = false;
+      $scope.searchData.query = "";
+      $scope.getNewestArticle();
+    };
+})
+
+/**
+ * 控制执法手册模块
+ */
 .controller('FolderCtrl', function($scope, $stateParams, $rootScope, $ionicPlatform, $sce, FolderServiceForLocal, ArticleServiceForLocal) {
 
   console.log('folderCurrentPage='+ $rootScope.folderCurrentPage);
@@ -45,13 +117,13 @@ angular.module('starter.controllers', [])
             //console.log("articlesData=" + data);
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
-            };
+            }
             //$scope.hide();
         },function(){
             $scope.noMoreAvailable = true;
-        });
-      };
-    });
+        })
+      }
+    })
   };
   $scope.getModule();
 
@@ -70,8 +142,6 @@ angular.module('starter.controllers', [])
   };
 
   $scope.loadMore = function(){
-    console.log("下一页");
-    //$scope.show();
     var currentPage = $rootScope.folderCurrentPage;
     $rootScope.folderCurrentPage =  currentPage + 1;
     ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
@@ -89,7 +159,6 @@ angular.module('starter.controllers', [])
 
   $scope.searchData = {'query':''};
   $scope.search = function($event){
-    //console.log('search val=' + $scope.searchData.query);
     if($scope.searchData.query == undefined || $scope.searchData.query == ''){
       $scope.searchFlag = false;
       $scope.islastFolder = false;
@@ -123,9 +192,8 @@ angular.module('starter.controllers', [])
       $scope.searchFlag = true;
 
       $scope.islastFolder = true;
-    });
-  };
-
+    })
+  }
 
   $scope.isCleanButton = false;
   $scope.focus = function(){

@@ -194,6 +194,26 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
 
   // Each tab has its own nav history stack:
 
+    .state('tab.newest', {
+      url: '/newest',
+      views: {
+        'tab-newest': {
+          templateUrl: 'templates/tab-newest.html',
+          controller: 'NewestCtrl'
+        }
+      }
+    })
+
+    .state('tab.newestArticle', {
+      url: '/newestArticle/:docid',
+      views: {
+        'tab-newest': {
+          templateUrl: 'templates/tab-article.html',
+          controller: 'ArticleCtrl'
+        }
+      }
+    })
+
   .state('tab.folder', {
     url: '/folder/:supModuleName/:moduleName/:subModuleName',
     views: {
@@ -227,7 +247,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       url: '/lawsArticle/:docid',
       views: {
         'tab-laws': {
-          templateUrl: 'templates/laws-article.html',
+          templateUrl: 'templates/tab-article.html',
           controller: 'ArticleCtrl'
         }
       }
@@ -263,7 +283,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
   });
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/folder/执法工作手册//');
+  $urlRouterProvider.otherwise('/tab/newest');
   //$locationProvider.html5Mode(true);
 
 });

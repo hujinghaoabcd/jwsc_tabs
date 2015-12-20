@@ -145,6 +145,25 @@ angular.module('starter.services', [])
   .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA){
     var service = {    // our factory definition
 
+      /**
+       * 获取最新文章
+       */
+      getNewestList : function(){
+        var defer = $q.defer();
+
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc order by docid desc limit 10 offset 0"
+        //var parameters = [supLm];
+
+        DBA.executeSql(selectSql).then(function(result){
+          //console.log(result);
+          defer.resolve(DBA.getAll(result));
+        },function(err){
+          console.log("DBA err");
+          defer.reject(err);
+        });
+
+        return defer.promise;
+      },
       /**获取列表**/
       getArticleList : function(supLm, lm, subLm, pageNo) {
         var defer = $q.defer();
@@ -315,7 +334,7 @@ angular.module('starter.services', [])
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':docid,'deviceId':$rootScope.myIMEI,'lastPosition':lastPosition},
+        params: {'id':docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId
