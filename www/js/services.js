@@ -334,7 +334,7 @@ angular.module('starter.services', [])
       $http({
         method: "post",
         url: appConfig.url + "/doc",
-        params: {'id':docid,'deviceId':'$rootScope.myIMEI','lastPosition':lastPosition},
+        params: {'id':docid,'deviceId':$rootScope.myIMEI,'lastPosition':lastPosition},
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'appId': appConfig.appId
@@ -463,12 +463,12 @@ angular.module('starter.services', [])
 
   return {
     /**检查文章更新**/
-    updateCheck : function(lastDocId) {
+    updateCheck : function(lastId) {
       var defer = $q.defer();
       $http({
         method: "post",
         url: appConfig.url + "/update",
-        params: {'lastDocId':lastDocId},
+        params: {'lastId':lastId},
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'appId': appConfig.appId

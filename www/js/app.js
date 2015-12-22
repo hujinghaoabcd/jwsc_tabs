@@ -84,8 +84,10 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     }
     var createDocTable = "CREATE TABLE IF NOT EXISTS doc (docid integer primary key, lmId integer,suplm varchar(200),lm varchar(512),sublm varchar(50),tBt varchar(512),tZw text, zwText text,tDate varchar(20))";
     var createModuleTable = "CREATE TABLE IF NOT EXISTS moduleName (id integer primary key, moduleid varchar(50),supModuleName varchar(200),moduleName varchar(200),subModuleName varchar(200))";
+    var createDocLogTable = "CREATE TABLE IF NOT EXISTS doc_log(id integer,docid integer,acttype varchar(20),acttime DATETIME)";
     $cordovaSQLite.execute(db,createDocTable);
     $cordovaSQLite.execute(db,createModuleTable);
+    $cordovaSQLite.execute(db,createDocLogTable);
 
     if (window.StatusBar) {
       // org.apache.cordova.statusbar required
@@ -153,20 +155,34 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         });
       }else{
         //检查是否有新增文章
-        var sql = "select count(docid) as docid from doc";
+        var sql = "select max(id) as id from doc_log";
         DBA.executeSql(sql).then(function(result){
-          var lastDocId = DBA.getById(result).docid;
-          UpdateService.updateCheck(lastDocId).then(function(result){
-            console.log("updateCheck result:" + result);
-            if(result == true){
-              var updatePopup = $ionicPopup.alert({
-                title: '<b>有文章更新！</b>',
-                template: '请在设置->同步云端数据，获取最新文章。',
-                okText:'确定'
-              });
-              updatePopup.then(function(res) {
-                console.log('success notice.');
-              });
+          var lastId = DBA.getById(result).id;;
+          if(lastId == null){
+            lastId = "";
+          }
+          UpdateService.updateCheck(lastId).then(function(result){
+            console.log("updateCheck result:");
+            console.log(result.length);
+            if(lastId == ''){
+              //插入doc_log表
+              var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+              var parameters = [result[0].id,result[0].docid,result[0].acttype,result[0].acttime];
+              console.log(parameters);
+              DBA.executeSql(insertSql,parameters);
+
+            }else{
+              //TODO 统计有多少新增，更新、删除
+              if(result.length > 0){
+                var updatePopup = $ionicPopup.alert({
+                  title: '<b>有'+ result.length+'篇文章更新！</b>',
+                  template: '请在设置->同步云端数据，获取最新文章。',
+                  okText:'确定'
+                });
+                updatePopup.then(function(res) {
+                  console.log('success notice.');
+                });
+              }
             }
           })
         })

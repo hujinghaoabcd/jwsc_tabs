@@ -621,7 +621,7 @@ angular.module('starter.controllers', [])
                   $timeout(function() {
                     $ionicLoading.hide();
                   }, 1000);
-                });
+                })
             });
           }
         },function(err){
@@ -652,37 +652,140 @@ angular.module('starter.controllers', [])
     $ionicLoading.show({
       template: "正在同步..."
     });
-    var sql = "select count(docid) as docid from doc";
+    var sql = "select max(id) as id from doc_log";
     DBA.executeSql(sql).then(function(result){
-      var lastDocId = DBA.getById(result).docid;
-      console.log(lastDocId);
-      if(lastDocId !== null){
-        UpdateService.updateCheck(lastDocId).then(function(result){
-          console.log("updateCheck result:" + result);
-          if(result == true){
-            //获取目录和文章
-            getAllModuleAndDocList('执法工作手册','','');
-            getAllModuleAndDocList('常用法律法规','','');
+      var lastId = DBA.getById(result).id;
+
+      if(lastId !== null){
+        //TODO 查询doc_log
+        UpdateService.updateCheck(lastId).then(function(result){
+          console.log("updateCheck result:");
+          console.log(result);
+          if(result.length > 0){
+            //获取更新的
+            var i = 0;
+            var len = result.length;
+            angular.forEach(result, function(docLog){
+
+              if(docLog.acttype == 'del'){//删除
+                i++;
+                var delSql = "delete from doc where docid = ?";
+                var parameters = [docLog.docid];
+                DBA.executeSql(delSql,parameters).then(function(result){
+                  console.log("删除doc id"+ docLog.docid+ "成功");
+
+                  //插入doc_log表
+                  var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+                  var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
+                  DBA.executeSql(insertSql,parameters).then(function(result){
+                    console.log("插入doclog成功")
+                  },function(err){
+                    console.log("插入doclog失败");
+                  })
+                },function(err){
+                  console.log(err);
+                  $ionicLoading.show({
+                    template: "更新失败"
+                  });
+                })
+
+                if(i == len){
+                  $timeout(function() {
+                    $ionicLoading.hide();
+                  }, 1000);
+                }else{
+                  $ionicLoading.hide();
+                }
+              }else{//获取最新
+                var docId = docLog.docid;
+
+                var lastPosition = -2;//获取文章详情，通过后台判断lastPosition=-2时不进行分段加载
+                ArticleService.getArticle(docId,lastPosition,true).then(function(data1){
+
+                  //显示进度
+                  i++;
+                  var downloadProgress = Math.round((i / len) * 100);
+                  var showText = "共" + len + "个更新";
+
+                  showText += "，已同步" + downloadProgress + "%";
+                  $ionicLoading.show({
+                    template:  showText
+                  });
+
+                  var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
+                  //去除html标签 存入字段
+                  var zw_remove_html = data1.tZw.replace(/<[^>]+>/g,"");//去掉所有的html标记
+                  zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
+                  zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
+                  zw_remove_html = zw_remove_html.replace(/(\n)+|(\r\n)+/g, "");//去除换行
+                  //console.log(zw_remove_html);
+                  var parameters = [data1.docid,data1.lmId,data1.suplm,data1.lm,data1.sublm,data1.tBt,data1.tZw,zw_remove_html,data1.tDate];
+                  DBA.executeSql(insertSql,parameters);
+
+                  //隐藏
+                  if(downloadProgress > 99){
+                    if(i == len){
+                      $timeout(function() {
+                        $ionicLoading.hide();
+                      }, 1000);
+                    }else{
+                      $ionicLoading.hide();
+                    }
+
+                  }
+                  //插入doc_log表
+                  var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+                  var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
+                  DBA.executeSql(insertSql,parameters).then(function(result){
+                    console.log("插入doclog成功")
+                  },function(err){
+                    console.log("插入doclog失败");
+                  })
+
+                },function(err){
+                  console.log("doc更新失败");
+                  $ionicLoading.show({
+                    template: "同步失败，请检查网络"
+                  });
+                  $timeout(function() {
+                    $ionicLoading.hide();
+                  }, 1000);
+                })
+              }
+            })
           }else{
             $ionicLoading.show({
-              template: "已是最新数据"
+              template: "当前是最新数据"
             });
             $timeout(function() {
               $ionicLoading.hide();
-            }, 2000);
+            }, 1000);
           }
         },function(err){
+          console.log(err);
           $ionicLoading.show({
             template: "同步失败，请检查网络"
           });
           $timeout(function() {
             $ionicLoading.hide();
-          }, 2000);
+          }, 1000);
         })
       }else{
-        //获取目录和文章
+        //获取所有目录和文章
         getAllModuleAndDocList('执法工作手册','','');
         getAllModuleAndDocList('常用法律法规','','');
+        //doc_log. lastId=""表示取最后一条更新
+        var lastId = "";
+        UpdateService.updateCheck(lastId).then(function(result){
+          console.log("updateCheck result:");
+          console.log(result.length);
+          //插入doc_log表
+          var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+          var parameters = [result[0].id,result[0].docid,result[0].acttype,result[0].acttime];
+          console.log(parameters);
+          DBA.executeSql(insertSql,parameters);
+
+        })
       }
     })
   };
