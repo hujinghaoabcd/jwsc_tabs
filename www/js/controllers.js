@@ -84,6 +84,13 @@ angular.module('starter.controllers', [])
       $scope.searchData.query = "";
       $scope.getNewestArticle();
     };
+
+    $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+      if(toState.url == "/newest"){
+        $scope.getNewestArticle();
+        console.log("newest stateChangeSuccess to doRefresh");
+      }
+    });
 })
 
 /**
@@ -108,12 +115,13 @@ angular.module('starter.controllers', [])
 
     FolderServiceForLocal.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
-      console.log("modulesData=" );
-      console.log(data);
+      //console.log("modulesData=" );
+      //console.log(data);
       if (data.length == 0 && module !== '') {
         $scope.islastFolder = true;
         ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
+          //console.log(data);
             //console.log("articlesData=" + data);
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
@@ -129,7 +137,7 @@ angular.module('starter.controllers', [])
 
   $scope.doRefresh = function(){
 
-    console.log($scope.searchFlag);
+    //console.log($scope.searchFlag);
     if ($scope.searchFlag) {
       $scope.$broadcast('scroll.refreshComplete');
       return;
@@ -145,7 +153,7 @@ angular.module('starter.controllers', [])
     var currentPage = $rootScope.folderCurrentPage;
     $rootScope.folderCurrentPage =  currentPage + 1;
     ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
-      console.log('$scope.articles='+$scope.articles);
+      //console.log('$scope.articles='+$scope.articles);
       $scope.articles = $scope.articles.concat(data);
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
@@ -241,7 +249,11 @@ angular.module('starter.controllers', [])
     //console.log(toParams);
     //console.log(fromState);
     //console.log(fromParams);
-    console.log("foler stateChangeSuccess");
+    //console.log("foler stateChangeSuccess");
+    if(toParams.supModuleName==supModule && toParams.moduleName == "" && toParams.subModuleName ==""){
+      $scope.getModule();
+      console.log("foler stateChangeSuccess to doRefresh");
+    }
   });
 })
 
@@ -254,7 +266,7 @@ angular.module('starter.controllers', [])
     };
 }])
 
-.controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, $stateParams, ArticleServiceForLocal) {
+.controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, $stateParams,$timeout, ArticleServiceForLocal) {
 
   $scope.lastPosition = "";
   $scope.noMoreAvailable = false;
@@ -283,12 +295,26 @@ angular.module('starter.controllers', [])
   });
 
   ArticleServiceForLocal.getArticle($stateParams.docid,$scope.lastPosition).then(function(data){
-    $scope.article = data;
-    $scope.lastPosition = data.lastPosition;
-    $ionicLoading.hide();
-    if ($scope.lastPosition !== -1) {
+    //console.log("doc detail:");
+    //console.log(data);
+    if(null != data){
+      $scope.article = data;
+      $scope.lastPosition = data.lastPosition;
+      $ionicLoading.hide();
+      if ($scope.lastPosition !== -1) {
         $scope.loadMore($stateParams.docid);
-    };
+      };
+    }else{
+      $ionicLoading.show({
+        template: "该文章已删除，请返回列表。下拉刷新列表！"
+      });
+      $timeout(function() {
+        $ionicLoading.hide();
+      }, 2000);
+    }
+
+
+
   },function(err){
       if (err == "FAIL") {
         $scope.showServiceAlert();
@@ -464,22 +490,28 @@ angular.module('starter.controllers', [])
     $scope.islastFolder = false;
   };
 
-  $scope.$on('$stateChangeSuccess', function() {
-    console.log("laws stateChangeSuccess");
+  $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+    //console.log("laws stateChangeSuccess");
     //$scope.islastFolder = false;
     //$scope.searchFlag = false;
     //supModule = "常用法律法规";
     //module = "";
     //subModule = "";
     //$scope.getModule();
+    if(toParams.supModuleName ==supModule && toParams.moduleName == "" && toParams.subModuleName ==""){
+      $scope.getModule();
+      console.log("laws stateChangeSuccess to doRefresh");
+    }
   });
 })
 
-.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading, $ionicPopover, $timeout,DBA,FolderService,ArticleService,UpdateService,appConfig) {
+.controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading,
+                                    $ionicPopover, $timeout,DBA,FolderService,ArticleService,UpdateService,appConfig) {
 
   $scope.useCache = $rootScope.useCache;
   $scope.versionName = $rootScope.versionName;
-  console.log("$rootScope.versionName:" + $rootScope.versionName);
+  //console.log("$rootScope.updateCount:" + $rootScope.updateCount);
+  //console.log("$rootScope.versionName:" + $rootScope.versionName);
 
   $scope.clean = function(){
      var myPopup = $ionicPopup.show({
@@ -487,7 +519,7 @@ angular.module('starter.controllers', [])
       title: '<b>清除缓存</b>'
     });
     myPopup.then(function(res) {
-      console.log('clean!'+res);
+      console.log('clean!');
       window.localStorage.clear();
     });
     $timeout(function() {
@@ -585,6 +617,10 @@ angular.module('starter.controllers', [])
                 var lastPosition = -2;//获取文章详情，通过后台判断lastPosition=-2时不进行分段加载
                 ArticleService.getArticle(docData.docid,lastPosition,true).then(function(data1){
 
+                  $rootScope.updateCount = $rootScope.updateCount-1;
+                  //console.log($rootScope.updateCount);
+                  $rootScope.allCount = $rootScope.allCount + 1;
+                  //console.log("---------------------");
                   //显示进度
                   i++;
                   var downloadProgress = Math.round((i / len) * 100);
@@ -622,8 +658,8 @@ angular.module('starter.controllers', [])
                     $ionicLoading.hide();
                   }, 1000);
                 })
-            });
-          }
+              });
+            }
         },function(err){
               console.log("doclist更新失败");
               $ionicLoading.show({
@@ -652,6 +688,7 @@ angular.module('starter.controllers', [])
     $ionicLoading.show({
       template: "正在同步..."
     });
+    //console.log($rootScope.updateCount);
     var sql = "select max(id) as id from doc_log";
     DBA.executeSql(sql).then(function(result){
       var lastId = DBA.getById(result).id;
@@ -659,8 +696,8 @@ angular.module('starter.controllers', [])
       if(lastId !== null){
         //TODO 查询doc_log
         UpdateService.updateCheck(lastId).then(function(result){
-          console.log("updateCheck result:");
-          console.log(result);
+          //console.log("updateCheck result:");
+          //console.log(result);
           if(result.length > 0){
             //获取更新的
             var i = 0;
@@ -672,13 +709,13 @@ angular.module('starter.controllers', [])
                 var delSql = "delete from doc where docid = ?";
                 var parameters = [docLog.docid];
                 DBA.executeSql(delSql,parameters).then(function(result){
-                  console.log("删除doc id"+ docLog.docid+ "成功");
+                  //console.log("删除doc id"+ docLog.docid+ "成功");
 
                   //插入doc_log表
                   var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
                   var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
                   DBA.executeSql(insertSql,parameters).then(function(result){
-                    console.log("插入doclog成功")
+                    //console.log("插入doclog成功")
                   },function(err){
                     console.log("插入doclog失败");
                   })
@@ -737,7 +774,7 @@ angular.module('starter.controllers', [])
                   var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
                   var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
                   DBA.executeSql(insertSql,parameters).then(function(result){
-                    console.log("插入doclog成功")
+                    //console.log("插入doclog成功")
                   },function(err){
                     console.log("插入doclog失败");
                   })
@@ -755,7 +792,7 @@ angular.module('starter.controllers', [])
             })
           }else{
             $ionicLoading.show({
-              template: "当前是最新数据"
+              template: "现在网络上没有新数据，不需同步"
             });
             $timeout(function() {
               $ionicLoading.hide();
@@ -777,8 +814,8 @@ angular.module('starter.controllers', [])
         //doc_log. lastId=""表示取最后一条更新
         var lastId = "";
         UpdateService.updateCheck(lastId).then(function(result){
-          console.log("updateCheck result:");
-          console.log(result.length);
+          //console.log("updateCheck result:");
+          //console.log(result.length);
           //插入doc_log表
           var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
           var parameters = [result[0].id,result[0].docid,result[0].acttype,result[0].acttime];
@@ -817,7 +854,7 @@ angular.module('starter.controllers', [])
       });
       if (serverVersion == "" || $rootScope.versionName == serverVersion) {
         $ionicLoading.show({
-          template: "已是最新版本"
+          template: "当前是最新版本"
         });
         console.log('update!'+ res);
         updatePopup.close();

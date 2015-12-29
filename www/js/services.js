@@ -35,7 +35,9 @@ angular.module('starter.services', [])
   // Proces a single result
   self.getById = function(result) {
     var output = null;
-    output = angular.copy(result.rows.item(0));
+    if(result.rows.length > 0){
+      output = angular.copy(result.rows.item(0));
+    }
     return output;
   }
 
@@ -142,7 +144,7 @@ angular.module('starter.services', [])
   })
 
   /** 本地文章service**/
-  .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA){
+  .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
     var service = {    // our factory definition
 
       /**
@@ -151,14 +153,60 @@ angular.module('starter.services', [])
       getNewestList : function(){
         var defer = $q.defer();
 
-        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc order by docid desc limit 10 offset 0"
-        //var parameters = [supLm];
-
-        DBA.executeSql(selectSql).then(function(result){
+        var returnDocList;
+        var docLogList;
+        var docLogSql = "select distinct docid from doc_log where acttype !='del' order by acttime limit ? offset 0";
+        var params = [appConfig.newListNum];
+        DBA.executeSql(docLogSql,params).then(function(result){
           //console.log(result);
-          defer.resolve(DBA.getAll(result));
+          docLogList = DBA.getAll(result);
+          if(docLogList.length > 0){
+            var docids = "";
+            angular.forEach(docLogList,function(doc){
+              docids += doc.docid + ",";
+            })
+            docids = docids.substr(0,docids.length - 1);
+            var fromDocLogSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where docid in (" + docids+")";
+            DBA.executeSql(fromDocLogSql).then(function(result){
+              //console.log(result);
+              returnDocList = DBA.getAll(result);
+              var size = appConfig.newListNum - returnDocList.length;
+
+              var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where docid not in ("+ docids +") order by docid desc limit ? offset 0"
+              var parameters = [size];
+
+              DBA.executeSql(selectSql,parameters).then(function(result){
+                if(returnDocList.length == 0){
+                  returnDocList = DBA.getAll(result);
+                }else{
+                  var out = DBA.getAll(result);
+                  returnDocList.concat(out);
+                  console.log(returnDocList);
+                }
+                defer.resolve(returnDocList);
+              },function(err){
+                console.log("select doc DBA err");
+                defer.reject(err);
+              });
+            },function(err){
+              defer.reject(err);
+              console.log("select doc by docids" + docids);
+            });
+          }else{
+            //doc_log为空
+            var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc order by docid desc limit ? offset 0"
+            var parameters = [appConfig.newListNum];
+
+            DBA.executeSql(selectSql,parameters).then(function(result){
+              returnDocList = DBA.getAll(result);
+              defer.resolve(returnDocList);
+            },function(err){
+              console.log("select doc DBA err");
+              defer.reject(err);
+            });
+          }
         },function(err){
-          console.log("DBA err");
+          console.log("select doc_log DBA err");
           defer.reject(err);
         });
 
@@ -216,7 +264,9 @@ angular.module('starter.services', [])
         DBA.executeSql(selectSql,parameters).then(function(result){
           //console.log(result);
           var resultObj = DBA.getById(result);
-          resultObj['lastPosition'] = -1;
+          if(null != resultObj){
+            resultObj['lastPosition'] = -1;
+          }
 
           defer.resolve(resultObj);
         },function(err){

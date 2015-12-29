@@ -1,20 +1,12 @@
 <ion-view view-title="设置">
   <ion-content>
     <ion-list>
-    <!-- <ion-toggle  ng-model="settings.enableFriends">
-        Enable Friends
-    </ion-toggle> -->
-    <!-- <ion-item class="item-toggle">
-        省流量
-        <label class="toggle toggle-positive">
-          <input type="checkbox" ng-checked="useCache" ng-model="useCache" ng-click="setCache()">
-          <div class="track">
-            <div class="handle"></div>
-          </div>
-        </label>
-      </ion-item> -->
       <ion-item class="item-icon-right" ng-click="downloadData()">
-        同步云端数据
+        同步云端数据（本机现有{{allCount}}篇文章
+        <div ng-if="allCount == 0">，点击同步文章）</div>
+        <div ng-if="allCount > 0 && updateCount == 0">，无更新内容）</div>
+        <div ng-if="updateCount !== undefined && updateCount > 0">，有{{updateCount}}篇文章须更新）</div>
+        <div ng-if="updateCount < 0">）</div>
         <i class="icon ion-android-download"></i>
       </ion-item>
       <ion-item class="item-icon-right" ng-click="clean()">
@@ -30,10 +22,6 @@
           {{versionName}}
         </span>
       </ion-item>
-      <!-- <ion-item class="item-icon-right" href="#/app/introduction">
-        功能介绍
-        <i class="icon ion-ios-arrow-right"></i>
-      </ion-item> -->
       <ion-item class="item-icon-right" href="#/tab/us">
         功能说明
         <i class="icon ion-ios-arrow-right"></i>

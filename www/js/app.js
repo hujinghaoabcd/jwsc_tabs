@@ -15,7 +15,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\jwsc.db",//数据库路径
-        "targetPath":"file:///storage/sdcard0/Download/jwsc_update.apk"//下载文件地址
+        "targetPath":"file:///storage/sdcard0/Download/jwsc_update.apk",//下载文件地址
+        "newListNum": 10//最新列表文章数量
 })
 .run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$location,$ionicHistory,$timeout,
   $cordovaFileTransfer, $cordovaFile, $cordovaFileOpener2,$cordovaSQLite,DBA,LogsService,UpdateService,appConfig) {
@@ -43,9 +44,9 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       }
 
       // Is there a page to go back to?
-      console.log($location.path());
+      //console.log($location.path());
       if ($location.path() == '/tab/' ) {
-          console.log("/tab");
+          //console.log("/tab");
           showConfirm();
       } else if ($ionicHistory.backView()) {
           $ionicHistory.goBack(-1);
@@ -95,12 +96,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     }
 
     //TODO  获取应用更新信息
-    var serverVersion = "1.0.0";
+    var serverVersion = "2.0.0";
     var updateContext = "版本有更新";
     var apkFilePath = appConfig.url + "/resources/apk/jwsc.apk";
     UpdateService.updateApp().then(function(data){
-      console.log("request update interface response data:");
-      console.log(data);
+      //console.log("request update interface response data:");
+      //console.log(data);
       if (data.totalCount == 1) {
         serverVersion = data.content.packageVersion;//应用版本号
         apkFilePath = data.content.pkgFilePath;//更新地址
@@ -127,6 +128,9 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     var myIMEI = deviceInformation.uuid;
     $rootScope.myIMEI = myIMEI;
     console.log($rootScope.myIMEI);
+    if(undefined == $rootScope.myIMEI){
+      $rootScope.myIMEI = "test";
+    }
 
     //操作系统信息
     var currentPlatformVersion = ionic.Platform.version();
@@ -140,15 +144,17 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         UpdateService.popupUpdateView(apkFilePath,updateContext);
     }
 
+    $rootScope.updateCount = 0;
     //数据库内容为空，提示同步数据库
     var selectSql = "select count(1) as count from doc";
     DBA.executeSql(selectSql).then(function(result){
       var count = DBA.getById(result).count;
+      $rootScope.allCount = count;
       if(count < 1){
         var alertPopup = $ionicPopup.alert({
           title: '<b>本地数据为空！</b>',
-          template: '请在设置->同步云端数据，获取数据。同步完成后，下拉浏览最新数据。',
-          okText:'确定'
+          template: '&nbsp;&nbsp;&nbsp;&nbsp;操作提示：点击菜单“设置” ➜ “同步云端数据”，从网络获取数据。<br>&nbsp;&nbsp;&nbsp;&nbsp;注意：初次同步时内容较多,需看屏幕提示耐心等待',
+          okText:'我知道了'
         });
         alertPopup.then(function(res) {
           console.log('Thank you.');
@@ -162,8 +168,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
             lastId = "";
           }
           UpdateService.updateCheck(lastId).then(function(result){
-            console.log("updateCheck result:");
-            console.log(result.length);
+            //console.log("updateCheck result:");
+            //console.log(result.length);
             if(lastId == ''){
               //插入doc_log表
               var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
@@ -174,10 +180,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
             }else{
               //TODO 统计有多少新增，更新、删除
               if(result.length > 0){
+                $rootScope.updateCount = result.length;
                 var updatePopup = $ionicPopup.alert({
                   title: '<b>有'+ result.length+'篇文章更新！</b>',
-                  template: '请在设置->同步云端数据，获取最新文章。',
-                  okText:'确定'
+                  template: '&nbsp;&nbsp;&nbsp;&nbsp;操作提示：点击菜单“设置” ➜ “同步云端数据”，从网络获取数据。',
+                  okText:'我知道了'
                 });
                 updatePopup.then(function(res) {
                   console.log('success notice.');

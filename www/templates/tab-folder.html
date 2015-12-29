@@ -11,10 +11,12 @@
               <button class="button button-clear" ng-click="clearSearch()" ng-if="isCleanButton">取消</button>
           </div>
     </div>
-    <ion-refresher pulling-text="下拉刷新..." pulling-icon="ion-android-arrow-down" on-refresh="doRefresh()" refreshing-text="刷新成功" refreshing-icon="ion-loading-c" >
+    <ion-refresher pulling-text="下拉刷新..." pulling-icon="ion-android-arrow-down"
+                   on-refresh="doRefresh()" refreshing-text="刷新成功" refreshing-icon="ion-loading-c" >
     </ion-refresher>
     <ion-list ng-if="!islastFolder">
-        <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="module in modules" type="item-text-wrap" href="#/tab/folder/{{module.supModuleName}}/{{module.moduleName}}/{{module.subModuleName}}">
+        <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="module in modules"
+                  type="item-text-wrap" href="#/tab/folder/{{module.supModuleName}}/{{module.moduleName}}/{{module.subModuleName}}">
           <img ng-src="img/jh_logo.jpg">
           <div ng-if="!module.subModuleName"><h2 style="overflow: auto; text-overflow: clip;white-space:normal;">{{module.moduleName}}</h2></div>
           <div ng-if="module.subModuleName"><h2 style="overflow: auto; text-overflow: clip;white-space:normal;">{{module.subModuleName}}</h2></div>
@@ -24,7 +26,7 @@
         </ion-item>
     </ion-list>
     <div class="list" ng-if="islastFolder">
-        
+
         <ion-list >
           <ion-item  class="item-avatar" ng-repeat="article in articles" href="#/tab/articles/{{article.docid}}"
             collection-item-width="'100%'" >
@@ -32,7 +34,7 @@
             <h2 style="overflow: auto; text-overflow: clip;white-space:normal;">{{article.tBt}}</h2>
             <p class="summary">
               <span ng-if="!searchFlag"><i class="icon ion-clipboard"></i> {{article.lm}}<span ng-if="article.sublm">/{{article.sublm}}</span></span>
-              <span ng-if="searchFlag" ng-bind-html="article.lm | to_trusted" style="overflow: auto; text-overflow: clip;white-space:normal;"></span> 
+              <span ng-if="searchFlag" ng-bind-html="article.lm | to_trusted" style="overflow: auto; text-overflow: clip;white-space:normal;"></span>
             </p>
           </ion-item>
         </ion-list>
