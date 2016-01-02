@@ -9,13 +9,14 @@ var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
         "url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
-        //"url": "http://192.168.1.100:8080",//本地
+        //"url": "http://192.168.1.104:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
         //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//appid名字
         "versionName":"1.0.0",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\jwsc.db",//数据库路径
         "targetPath":"file:///storage/sdcard0/Download/jwsc_update.apk",//下载文件地址
+        "pageSize" : 10,//显示文章列表数量
         "newListNum": 10//最新列表文章数量
 })
 .run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$location,$ionicHistory,$timeout,
@@ -73,22 +74,27 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         console.log("varsion:" + version);
         setVersionInfo(version);
         if(serverVersion !="" && version != serverVersion){
-          updadeVersion();//弹出更新窗口
+          updateVersion();//弹出更新窗口
         }
       });
 
       //$cordovaSQLite.deleteDatabase(appConfig.dbName);
       db = $cordovaSQLite.openDB(appConfig.dbName);
     }else{
-
       db = window.openDatabase(appConfig.dbName, "1.0", "jwscdb", -1);
     }
-    var createDocTable = "CREATE TABLE IF NOT EXISTS doc (docid integer primary key, lmId integer,suplm varchar(200),lm varchar(512),sublm varchar(50),tBt varchar(512),tZw text, zwText text,tDate varchar(20))";
-    var createModuleTable = "CREATE TABLE IF NOT EXISTS moduleName (id integer primary key, moduleid varchar(50),supModuleName varchar(200),moduleName varchar(200),subModuleName varchar(200))";
-    var createDocLogTable = "CREATE TABLE IF NOT EXISTS doc_log(id integer,docid integer,acttype varchar(20),acttime DATETIME)";
-    $cordovaSQLite.execute(db,createDocTable);
-    $cordovaSQLite.execute(db,createModuleTable);
-    $cordovaSQLite.execute(db,createDocLogTable);
+    /**
+     * 创建表
+     */
+    function createTable(){
+      var createDocTable = "CREATE TABLE IF NOT EXISTS doc (docid integer primary key, lmId integer,suplm varchar(200),lm varchar(512),sublm varchar(50),tBt varchar(512),tZw text, zwText text,tDate varchar(20))";
+      var createModuleTable = "CREATE TABLE IF NOT EXISTS moduleName (id integer primary key, moduleid varchar(50),supModuleName varchar(200),moduleName varchar(200),subModuleName varchar(200))";
+      var createDocLogTable = "CREATE TABLE IF NOT EXISTS doc_log(id integer,docid integer,acttype varchar(20),acttime DATETIME)";
+      $cordovaSQLite.execute(db,createDocTable);
+      $cordovaSQLite.execute(db,createModuleTable);
+      $cordovaSQLite.execute(db,createDocLogTable);
+    }
+    createTable();
 
     if (window.StatusBar) {
       // org.apache.cordova.statusbar required
@@ -121,15 +127,13 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       //研究使用方式？
     });
 
-    //获取平台信息
+    //获取平台信息、手机imei
     var deviceInformation = ionic.Platform.device();
-
-    //手机imei
-    var myIMEI = deviceInformation.uuid;
-    $rootScope.myIMEI = myIMEI;
+    var myImei = deviceInformation.uuid;
+    $rootScope.myIMEI = myImei;
     console.log($rootScope.myIMEI);
     if(undefined == $rootScope.myIMEI){
-      $rootScope.myIMEI = "test";
+      $rootScope.myIMEI = "testWeb";
     }
 
     //操作系统信息
@@ -137,64 +141,78 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     console.log("currentPlatformVersion:" + currentPlatformVersion);
 
     //记录登录日志(
-    LogsService.addLogin(myIMEI);
+    LogsService.addLogin(myImei);
 
     //更新
-    function updadeVersion(){
+    function updateVersion(){
         UpdateService.popupUpdateView(apkFilePath,updateContext);
     }
 
     $rootScope.updateCount = 0;
     //数据库内容为空，提示同步数据库
-    var selectSql = "select count(1) as count from doc";
-    DBA.executeSql(selectSql).then(function(result){
-      var count = DBA.getById(result).count;
-      $rootScope.allCount = count;
-      if(count < 1){
-        var alertPopup = $ionicPopup.alert({
-          title: '<b>本地数据为空！</b>',
-          template: '&nbsp;&nbsp;&nbsp;&nbsp;操作提示：点击菜单“设置” ➜ “同步云端数据”，从网络获取数据。<br>&nbsp;&nbsp;&nbsp;&nbsp;注意：初次同步时内容较多,需看屏幕提示耐心等待',
-          okText:'我知道了'
-        });
-        alertPopup.then(function(res) {
-          console.log('Thank you.');
-        });
-      }else{
-        //检查是否有新增文章
-        var sql = "select max(id) as id from doc_log";
-        DBA.executeSql(sql).then(function(result){
-          var lastId = DBA.getById(result).id;;
-          if(lastId == null){
-            lastId = "";
-          }
-          UpdateService.updateCheck(lastId).then(function(result){
-            //console.log("updateCheck result:");
-            //console.log(result.length);
-            if(lastId == ''){
-              //插入doc_log表
-              var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
-              var parameters = [result[0].id,result[0].docid,result[0].acttype,result[0].acttime];
-              console.log(parameters);
-              DBA.executeSql(insertSql,parameters);
+    /**
+     * 检查本地数据，没有数据进行提示，有数据查看服务器是否有更新
+     */
+    function checkLocalData(){
+      var selectSql = "select count(1) as count from doc";
+      DBA.executeSql(selectSql).then(function(result){
+        var count = DBA.getById(result).count;
+        $rootScope.allCount = count;
+        if(count < 1){
+          var alertPopup = $ionicPopup.alert({
+            title: '<b>本地数据为空！</b>',
+            template: '&nbsp;&nbsp;&nbsp;&nbsp;操作提示：点击菜单“设置” ➜ “同步云端数据”，从网络获取数据。<br>&nbsp;&nbsp;&nbsp;&nbsp;注意：初次同步时内容较多，需看屏幕提示耐心等待。',
+            okText:'我知道了'
+          });
+          alertPopup.then(function(res) {
+            console.log('Thank you.');
+          });
+        }else{
+          checkServerDataUpdate();
+        }
+      })
+    }
+    checkLocalData();
 
-            }else{
-              //TODO 统计有多少新增，更新、删除
-              if(result.length > 0){
-                $rootScope.updateCount = result.length;
-                var updatePopup = $ionicPopup.alert({
-                  title: '<b>有'+ result.length+'篇文章更新！</b>',
-                  template: '&nbsp;&nbsp;&nbsp;&nbsp;操作提示：点击菜单“设置” ➜ “同步云端数据”，从网络获取数据。',
-                  okText:'我知道了'
-                });
-                updatePopup.then(function(res) {
-                  console.log('success notice.');
-                });
-              }
+    /**
+     * 检查服务器是否有新增文章
+     */
+    function checkServerDataUpdate(){
+      var sql = "select max(id) as id from doc_log";
+      DBA.executeSql(sql).then(function(result){
+        var lastId = DBA.getById(result).id;;
+        if(lastId == null){
+          lastId = "";
+        }
+        UpdateService.updateCheck(lastId).then(function(result){
+          //console.log("updateCheck result:");
+          //console.log(result.length);
+          if(lastId == ''){
+            //插入doc_log表
+            var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+            var parameters;
+            angular.forEach(result,function(docLog){
+              parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
+              //console.log(parameters);
+              DBA.executeSql(insertSql,parameters);
+            })
+          }else{
+            //TODO 统计有多少新增，更新、删除
+            if(result.length > 0){
+              $rootScope.updateCount = result.length;
+              var updatePopup = $ionicPopup.alert({
+                title: '<b>有'+ result.length+'篇文章更新！</b>',
+                template: '&nbsp;&nbsp;&nbsp;&nbsp;操作提示：点击菜单“设置” ➜ “同步云端数据”，从网络获取数据。',
+                okText:'我知道了'
+              });
+              updatePopup.then(function(res) {
+                console.log('success notice.');
+              });
             }
-          })
+          }
         })
-      }
-    })
+      })
+    }
   });
 })
 
@@ -308,5 +326,4 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/newest');
   //$locationProvider.html5Mode(true);
-
 });

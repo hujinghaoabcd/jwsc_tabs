@@ -44,7 +44,9 @@ angular.module('starter.services', [])
   return self;
 })
 
-/**目录service**/
+/**
+ * 目录service。网络获取失败改用本地
+ */
 .factory('FolderService',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
 
   return {
@@ -74,7 +76,6 @@ angular.module('starter.services', [])
           }else{
             console.log("fail to http POST module, start get data by local db");
             //网络获取失败，从本地获取数据
-
             console.log(supModule + "|" + module + "|" + subModule);
             if (supModule != '' && module !== '' && subModule != '') {
               defer.resolve([]);
@@ -153,7 +154,7 @@ angular.module('starter.services', [])
       getNewestList : function(){
         var defer = $q.defer();
 
-        var returnDocList;
+        var returnDocList =[];
         var docLogList;
         var docLogSql = "select distinct docid from doc_log where acttype !='del' order by acttime limit ? offset 0";
         var params = [appConfig.newListNum];
@@ -180,8 +181,9 @@ angular.module('starter.services', [])
                   returnDocList = DBA.getAll(result);
                 }else{
                   var out = DBA.getAll(result);
-                  returnDocList.concat(out);
-                  console.log(returnDocList);
+                  for (var i = 0; i < out.length; i++) {
+                    returnDocList.push(out[i]);
+                  }
                 }
                 defer.resolve(returnDocList);
               },function(err){
@@ -220,7 +222,7 @@ angular.module('starter.services', [])
         var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where suplm = ?"
         var parameters = [supLm];
 
-        var size = 10;//size:每页显示条数，index页码
+        var size = appConfig.pageSize;//size:每页显示条数，index页码
         var start = 0;
         if(pageNo > 1){
           start = size * (pageNo -1) + 1;
@@ -239,8 +241,6 @@ angular.module('starter.services', [])
         parameters.push(start);
         selectSql += " order by tDate desc limit ? offset ?";//offset代表从第几条记录“之后“开始查询，limit表明查询多少条结果
 
-        //console.log(selectSql);
-        //console.log(parameters);
         DBA.executeSql(selectSql,parameters).then(function(result){
           //console.log(result);
           defer.resolve(DBA.getAll(result));
@@ -252,13 +252,10 @@ angular.module('starter.services', [])
       },
       /** 获取详细内容 **/
       getArticle :function(docid){
-        //console.log(docid)
         var defer = $q.defer();
         console.log("start get data by local");
-
         var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
         var parameters = [docid];
-
         //console.log(selectSql);
         //console.log(parameters);
         DBA.executeSql(selectSql,parameters).then(function(result){
@@ -280,10 +277,8 @@ angular.module('starter.services', [])
       search : function(val){
         var defer = $q.defer();
 
-        console.log("start get data by local");
-
+        console.log("start select data by local");
         var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate from doc where zwText like ?";
-
         var parameters = ["%" + val + "%"];
         DBA.executeSql(selectSql,parameters).then(function(result){
           //处理副标题tm字段

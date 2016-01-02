@@ -25,6 +25,9 @@ angular.module('starter.controllers', [])
  */
 .controller('NewestCtrl',function($scope,ArticleServiceForLocal){
 
+    /**
+     * 获取最新文章列表
+     */
     $scope.getNewestArticle = function(){
       ArticleServiceForLocal.getNewestList().then(function(data){
         $scope.articles = data;
@@ -32,13 +35,27 @@ angular.module('starter.controllers', [])
     }
     $scope.getNewestArticle();
 
-    $scope.doRefresh = function(){
+    /**
+     * 搜索数据
+     */
+    function search(){
+      console.log("seach data...");
+      ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
+        $scope.articles = data;
+        $scope.searchFlag = true;
+      })
+    }
 
+    /**
+     * 下拉刷新
+     */
+    $scope.doRefresh = function(){
       console.log($scope.searchFlag);
       if ($scope.searchFlag) {
+        search();
         $scope.$broadcast('scroll.refreshComplete');
         return;
-      };
+      }
       $scope.noMoreAvailable = false;
       $scope.getNewestArticle();
 
@@ -46,35 +63,33 @@ angular.module('starter.controllers', [])
     };
 
     $scope.searchData = {'query':''};
-    $scope.search = function($event){
+
+    /**
+     * 搜索按钮
+     * @param $event
+     */
+    $scope.searchButton = function($event){
       if($scope.searchData.query == undefined || $scope.searchData.query == ''){
         $scope.searchFlag = false;
-        //$scope.islastFolder = false;
         $scope.getNewestArticle();
         return;
       }
       if ($event.keyCode !== 13) {//非搜索按钮，则返回
         return;
       };
-      ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
-
-        $scope.articles = data;
-        $scope.searchFlag = true;
-
-        //$scope.islastFolder = true;
-      })
+      search();
     }
 
     $scope.isCleanButton = false;
+    /**
+     * 获取焦点
+     */
     $scope.focus = function(){
       $scope.isCleanButton = true;
-      //$scope.islastFolder = false;
       $scope.searchFlag = false;
     };
 
     $scope.onblur = function(){
-      //$scope.isCleanButton = false;
-      //$scope.searchData.query = "";
     };
 
     $scope.clearSearch = function(){
@@ -86,7 +101,7 @@ angular.module('starter.controllers', [])
     };
 
     $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-      if(toState.url == "/newest"){
+      if(toState.url == "/newest" && $scope.isCleanButton == false){
         $scope.getNewestArticle();
         console.log("newest stateChangeSuccess to doRefresh");
       }
@@ -103,42 +118,47 @@ angular.module('starter.controllers', [])
   $scope.islastFolder = false;
   $scope.noMoreAvailable = false;
   $rootScope.folderCurrentPage = 1;
-  console.log('folderCurrentPage set='+ $rootScope.folderCurrentPage);
   var supModule = $stateParams.supModuleName;
 
   var module = $stateParams.moduleName;
   var subModule = $stateParams.subModuleName;
   $rootScope.supModule = supModule;//用于选择tab的时候返回目录
-  console.log('supModule='+ supModule + '. module='+ module + '. subModule='+ subModule);
 
-  $scope.getModule =function(){
-
+  $scope.getModule =function(isFirst){
     FolderServiceForLocal.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
-      //console.log("modulesData=" );
-      //console.log(data);
       if (data.length == 0 && module !== '') {
         $scope.islastFolder = true;
         ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
             $scope.articles = data;
-          //console.log(data);
-            //console.log("articlesData=" + data);
             if (data.length == 0) {
               $scope.noMoreAvailable = true;
             }
-            //$scope.hide();
         },function(){
             $scope.noMoreAvailable = true;
         })
       }
     })
+    $scope.isFirst = isFirst;//是否是第一次加载
   };
-  $scope.getModule();
+  $scope.getModule(true);
+
+    /**
+     * 搜索
+     */
+    function search(){
+      console.log("search data..")
+      ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
+        $scope.articles = data;
+        $scope.searchFlag = true;
+        $scope.islastFolder = true;
+      })
+    }
 
   $scope.doRefresh = function(){
-
     //console.log($scope.searchFlag);
     if ($scope.searchFlag) {
+      search();
       $scope.$broadcast('scroll.refreshComplete');
       return;
     };
@@ -153,7 +173,6 @@ angular.module('starter.controllers', [])
     var currentPage = $rootScope.folderCurrentPage;
     $rootScope.folderCurrentPage =  currentPage + 1;
     ArticleServiceForLocal.getArticleList(supModule,module,subModule, $rootScope.folderCurrentPage).then(function(data){
-      //console.log('$scope.articles='+$scope.articles);
       $scope.articles = $scope.articles.concat(data);
       if (data.length == 0) {
         $scope.noMoreAvailable = true;
@@ -166,7 +185,12 @@ angular.module('starter.controllers', [])
   };
 
   $scope.searchData = {'query':''};
-  $scope.search = function($event){
+
+  /**
+   * 搜索按钮
+   * @param $event
+   */
+  $scope.searchButton = function($event){
     if($scope.searchData.query == undefined || $scope.searchData.query == ''){
       $scope.searchFlag = false;
       $scope.islastFolder = false;
@@ -194,27 +218,30 @@ angular.module('starter.controllers', [])
     if ($event.keyCode !== 13) {//非搜索按钮，则返回
       return;
     };
-    ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
-
-      $scope.articles = data;
-      $scope.searchFlag = true;
-
-      $scope.islastFolder = true;
-    })
+    search();
   }
 
   $scope.isCleanButton = false;
+  /**
+   * 获取焦点
+   */
   $scope.focus = function(){
     $scope.isCleanButton = true;
     $scope.islastFolder = false;
     $scope.searchFlag = false;
   };
 
+  /**
+   * 失去焦点
+   */
   $scope.onblur = function(){
     //$scope.isCleanButton = false;
     //$scope.searchData.query = "";
   };
 
+  /**
+   * 取消搜索按钮
+   */
   $scope.clearSearch = function(){
     $scope.isCleanButton = false;
     $scope.islastFolder = false;
@@ -240,19 +267,15 @@ angular.module('starter.controllers', [])
         $scope.getModule();
         return;
       }
-    //console.log("query="+$scope.searchData.query);
   };
 
   $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-    //console.log("foler change");
-    //console.log(toState);
-    //console.log(toParams);
-    //console.log(fromState);
-    //console.log(fromParams);
-    //console.log("foler stateChangeSuccess");
-    if(toParams.supModuleName==supModule && toParams.moduleName == "" && toParams.subModuleName ==""){
-      $scope.getModule();
+    if($scope.isFirst !== true && toParams.supModuleName == supModule && toParams.moduleName == "" && toParams.subModuleName ==""){
+      $scope.getModule(false);
       console.log("foler stateChangeSuccess to doRefresh");
+    }
+    if($scope.isFirst == true){
+      $scope.isFirst = false;
     }
   });
 })
@@ -270,6 +293,7 @@ angular.module('starter.controllers', [])
 
   $scope.lastPosition = "";
   $scope.noMoreAvailable = false;
+
   $scope.showAlert = function() {
      var alertPopup = $ionicPopup.alert({
        title: '网络异常',
@@ -280,6 +304,9 @@ angular.module('starter.controllers', [])
      });
   };
 
+  /**
+   * 服务异常提示页面
+   */
   $scope.showServiceAlert = function() {
        var alertPopup = $ionicPopup.alert({
          title: '服务异常',
@@ -312,9 +339,6 @@ angular.module('starter.controllers', [])
         $ionicLoading.hide();
       }, 2000);
     }
-
-
-
   },function(err){
       if (err == "FAIL") {
         $scope.showServiceAlert();
@@ -324,8 +348,11 @@ angular.module('starter.controllers', [])
       $ionicLoading.hide();
   });
 
+  /**
+   * 加载更多
+   * @param docid
+   */
   $scope.loadMore = function(docid){
-
     ArticleServiceForLocal.getArticle(docid,$scope.lastPosition).then(function(data){
 
       $scope.article.tZw += data.tZw;
@@ -341,7 +368,6 @@ angular.module('starter.controllers', [])
         }
         $ionicLoading.hide();
     });
-
   };
 })
 
@@ -365,7 +391,10 @@ angular.module('starter.controllers', [])
   $scope.noMoreAvailable = false;
   $rootScope.lawsCurrentPage = 1;
 
-  $scope.getModule =function(){
+  /**
+   * 加载目录
+   */
+  $scope.getModule =function(isFirst){
     FolderServiceForLocal.getFolderList(supModule, module, subModule).then(function(data){
       $scope.modules = data;
       //console.log(data);
@@ -380,17 +409,32 @@ angular.module('starter.controllers', [])
         },function(){
             $scope.noMoreAvailable = true;
         });
-      };
+      }
     },function(){
       $scope.noMoreAvailable = true;
-    });
+    })
+    $scope.isFirst = isFirst;//是否是第一次加载
   };
-  $scope.getModule();
+  $scope.getModule(true);
 
-  //所以页面都可下来刷新
+    /**
+     * 搜索
+     */
+    function search(){
+      console.log("search data...");
+      ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
+        $scope.articles = data;
+        $scope.searchFlag = true;
+        $scope.islastFolder = true;
+      });
+    }
+  /**
+   * 下拉刷新
+   */
   $scope.doRefresh = function(){
     if ($scope.searchFlag) {
       //$scope.noMoreAvailable = true;
+      search();
       $scope.$broadcast('scroll.refreshComplete');
       return;
     };
@@ -401,6 +445,9 @@ angular.module('starter.controllers', [])
     $scope.$broadcast('scroll.refreshComplete');
   };
 
+  /**
+   * 加载更多
+   */
   $scope.loadMore = function(){
     var currentPage = $rootScope.lawsCurrentPage;
     $rootScope.lawsCurrentPage =  currentPage + 1;
@@ -416,8 +463,17 @@ angular.module('starter.controllers', [])
     });
   };
 
+  /**
+   * 搜索参数
+   * @type {{query: string}}
+   */
   $scope.searchData = {'query':''};
-  $scope.search = function($event){
+
+  /**
+   * 搜索
+   * @param $event
+   */
+  $scope.searchButton = function($event){
     if($scope.searchData.query == undefined || $scope.searchData.query == ''){
       $scope.searchFlag = false;
       $scope.islastFolder = false;
@@ -443,27 +499,30 @@ angular.module('starter.controllers', [])
     }
     if ($event.keyCode !== 13) {//非搜索按钮，则返回
       return;
-    };
-    ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
-
-      $scope.articles = data;
-      $scope.searchFlag = true;
-
-      $scope.islastFolder = true;
-    });
-  };
+    }
+    search();
+  }
 
   $scope.isCleanButton = false;
+  /**
+   * 获取输入框
+   */
   $scope.focus = function(){
     $scope.isCleanButton = true;
     $scope.islastFolder = false;
     $scope.searchFlag = false;
-  };
+  }
 
+  /**
+   * 失去焦点时发生
+   */
   $scope.onblur = function(){
 
-  };
+  }
 
+  /**
+   * 取消搜索
+   */
   $scope.clearSearch = function(){
     $scope.isCleanButton = false;
 
@@ -490,19 +549,19 @@ angular.module('starter.controllers', [])
     $scope.islastFolder = false;
   };
 
+  /**
+   * 监听标签切换
+   */
   $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
     //console.log("laws stateChangeSuccess");
-    //$scope.islastFolder = false;
-    //$scope.searchFlag = false;
-    //supModule = "常用法律法规";
-    //module = "";
-    //subModule = "";
-    //$scope.getModule();
-    if(toParams.supModuleName ==supModule && toParams.moduleName == "" && toParams.subModuleName ==""){
+    if($scope.isFirst !== true && toParams.supModuleName ==supModule && toParams.moduleName == "" && toParams.subModuleName ==""){
       $scope.getModule();
       console.log("laws stateChangeSuccess to doRefresh");
     }
-  });
+    if($scope.isFirst == true ){
+      $scope.isFirst = false;
+    }
+  })
 })
 
 .controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading,
@@ -511,8 +570,10 @@ angular.module('starter.controllers', [])
   $scope.useCache = $rootScope.useCache;
   $scope.versionName = $rootScope.versionName;
   //console.log("$rootScope.updateCount:" + $rootScope.updateCount);
-  //console.log("$rootScope.versionName:" + $rootScope.versionName);
 
+  /**
+   * 清除缓存按钮
+   */
   $scope.clean = function(){
      var myPopup = $ionicPopup.show({
       template: '正在清除缓存...',
@@ -548,7 +609,9 @@ angular.module('starter.controllers', [])
     $scope.popover.remove();
   });
 
-  //退出提示
+  /**
+   * 退出提示
+   */
   function confirmPopup(){
     var confirmPopup = $ionicPopup.confirm({
         title: '<strong>退出应用</strong>',
@@ -556,12 +619,9 @@ angular.module('starter.controllers', [])
         okText: '退出',
         cancelText: '取消'
     });
-
     confirmPopup.then(function (res) {
         if (res) {
             ionic.Platform.exitApp();
-        } else {
-            // Don't close
         }
     });
   }
@@ -571,6 +631,30 @@ angular.module('starter.controllers', [])
     //ionic.Platform.exitApp();
     confirmPopup();
   };
+
+  /**
+   * 添加或更新目录
+   * @param moduleData
+   */
+  function addOrUpdateModuleName(moduleData){
+    var insertSql = "replace INTO moduleName (id, moduleid, supModuleName, moduleName, subModuleName) VALUES (?,?,?,?,?)";
+    var parameters = [moduleData.id,moduleData.moduleid,moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName];
+    DBA.executeSql(insertSql,parameters);
+  }
+
+  /**
+   * 去除html标签
+   * @param htmlStr
+   * @returns {*}
+   */
+  function replaceHtml(htmlStr){
+    var zw_remove_html = htmlStr.replace(/<[^>]+>/g,"");//去掉所有的html标记
+    zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
+    zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
+    zw_remove_html = zw_remove_html.replace(/(\n)+|(\r\n)+/g, "");//去除换行
+
+    return zw_remove_html;
+  }
 
   /**获取所有目录和文章**/
   function getAllModuleAndDocList(suplm,module,sublm){
@@ -588,10 +672,8 @@ angular.module('starter.controllers', [])
           $ionicLoading.show({
             template: "正在同步..."
           });
-          //TODO插入SQLite
-          var insertSql = "replace INTO moduleName (id, moduleid, supModuleName, moduleName, subModuleName) VALUES (?,?,?,?,?)";
-          var parameters = [moduleData.id,moduleData.moduleid,moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName];
-          DBA.executeSql(insertSql,parameters);
+          //插入SQLite
+          addOrUpdateModuleName(moduleData);
           //遍历下一个目录
           getAllModuleAndDocList(moduleData.supModuleName,moduleData.moduleName,moduleData.subModuleName);
         })
@@ -599,7 +681,6 @@ angular.module('starter.controllers', [])
           $ionicLoading.show({
             template: "正在同步..."
           });
-
           //获取文章列表
           var pageNo = 2001;//获取分类下所有文章列表，通过后台判断pageNo > 2000 来实现
           ArticleService.getArticleList(suplm,module,sublm, pageNo, true).then(function(data){
@@ -634,13 +715,10 @@ angular.module('starter.controllers', [])
                     template:  showText
                   });
 
-                  var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
                   //去除html标签 存入字段
-                  var zw_remove_html = data1.tZw.replace(/<[^>]+>/g,"");//去掉所有的html标记
-                  zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
-                  zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
-                  zw_remove_html = zw_remove_html.replace(/(\n)+|(\r\n)+/g, "");//去除换行
+                  var zw_remove_html = replaceHtml(data1.tZw);
                   //console.log(zw_remove_html);
+                  var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
                   var parameters = [docData.docid,docData.lmId,docData.suplm,docData.lm,docData.sublm,docData.tBt,data1.tZw,zw_remove_html,docData.tDate];
                   DBA.executeSql(insertSql,parameters);
 
@@ -648,7 +726,6 @@ angular.module('starter.controllers', [])
                   if(downloadProgress > 99){
                     $ionicLoading.hide();
                   }
-                  //console.log("----i=" + i);
                 },function(err){
                   console.log("doc更新失败");
                   $ionicLoading.show({
@@ -661,18 +738,19 @@ angular.module('starter.controllers', [])
               });
             }
         },function(err){
-              console.log("doclist更新失败");
-              $ionicLoading.show({
-                  template: "同步失败，请检查网络"
-              });
-              $timeout(function() {
-                $ionicLoading.hide();
-              }, 1000);
+          console.log("doclist更新失败");
+          $ionicLoading.show({
+              template: "同步失败，请检查网络"
           });
+          $timeout(function() {
+            $ionicLoading.hide();
+          }, 1000);
+        });
       }
 
     },function(err){
       console.log("module更新失败");
+      console.log(err);
       $ionicLoading.show({
         template: "同步失败，请检查网络"
       });
@@ -682,50 +760,141 @@ angular.module('starter.controllers', [])
     });
   }
 
+    /**
+     * 插入日志表doc_log
+     * @param docLog
+     */
+    function insertDocLog(docLog){
+      if(undefined == docLog){
+        //doc_log. lastId=""表示取最新文章日志
+        var lastId = "";
+        UpdateService.updateCheck(lastId).then(function(result){
+          //插入doc_log  同步多个日志
+          var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+          var parameters;
+          angular.forEach(result,function(docLogResult){
+            parameters = [docLogResult.id,docLogResult.docid,docLogResult.acttype,docLogResult.acttime];
+            //console.log(parameters);
+            DBA.executeSql(insertSql,parameters);
+          })
+        })
+      }else{
+        //插入doc_log表
+        var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+        var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
+        DBA.executeSql(insertSql,parameters).then(function(result){
+          console.log("success to insert doc_log")
+        },function(err){
+          console.log("fail to insert doc_log");
+        })
+      }
+    }
+
+    /**
+     * 删除文档
+     * @param docid 删除文章
+     */
+    function delDoc(docId,docLog,i,len){
+      //显示进度
+      var downloadProgress = Math.round((i / len) * 100);
+      var showText = "共" + len + "个更新";
+
+      showText += "，已同步" + downloadProgress + "%";
+      $ionicLoading.show({
+        template:  showText
+      });
+
+      var delSql = "delete from doc where docid = ?";
+      var parameters = [docId];
+      DBA.executeSql(delSql,parameters).then(function(result){
+        //插入doc_log表
+        var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
+        var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
+        DBA.executeSql(insertSql,parameters).then(function(result){
+          //console.log("插入doclog成功")
+        },function(err){
+          console.log("插入doclog失败");
+        })
+        $rootScope.allCount = $rootScope.allCount - 1;
+      },function(err){
+        console.log(err);
+        $ionicLoading.show({
+          template: "更新失败"
+        });
+      })
+    }
+
+    /**
+     * 新增或更新文档
+     * @param docId 文档
+     * @param i 第几篇
+     * @param len 更新总数
+     */
+    function addOrUpdateDoc(docId,i,len){
+      var lastPosition = -2;//获取文章详情，通过后台判断lastPosition=-2时不进行分段加载
+      ArticleService.getArticle(docId,lastPosition,true).then(function(data1){
+
+        //显示进度
+        var downloadProgress = Math.round((i / len) * 100);
+        var showText = "共" + len + "个更新";
+
+        showText += "，已同步" + downloadProgress + "%";
+        $ionicLoading.show({
+          template:  showText
+        });
+
+        var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
+        //去除html标签 存入字段
+        var zw_remove_html = replaceHtml(data1.tZw);
+        //console.log(zw_remove_html);
+        var parameters = [data1.docid,data1.lmId,data1.suplm,data1.lm,data1.sublm,data1.tBt,data1.tZw,zw_remove_html,data1.tDate];
+        DBA.executeSql(insertSql,parameters);
+
+        //隐藏
+        if(downloadProgress > 99){
+          if(i == len){
+            $timeout(function() {
+              $ionicLoading.hide();
+            }, 1000);
+          }else{
+            $ionicLoading.hide();
+          }
+        }
+      },function(err){
+        console.log("fail to update doc");
+        $ionicLoading.show({
+          template: "同步失败，请检查网络"
+        });
+        $timeout(function() {
+          $ionicLoading.hide();
+        }, 1000);
+      })
+    }
+
   /**同步云端数据按钮**/
   $scope.downloadData = function() {
-
     $ionicLoading.show({
       template: "正在同步..."
     });
-    //console.log($rootScope.updateCount);
+    console.log($rootScope.updateCount);
     var sql = "select max(id) as id from doc_log";
     DBA.executeSql(sql).then(function(result){
       var lastId = DBA.getById(result).id;
-
       if(lastId !== null){
-        //TODO 查询doc_log
+        // 查询doc_log
         UpdateService.updateCheck(lastId).then(function(result){
-          //console.log("updateCheck result:");
-          //console.log(result);
+          console.log("updateCheck result:");
+          console.log(result);
           if(result.length > 0){
             //获取更新的
             var i = 0;
             var len = result.length;
             angular.forEach(result, function(docLog){
-
+              var docId = docLog.docid;
+              $rootScope.updateCount = $rootScope.updateCount-1;//待更新数量
               if(docLog.acttype == 'del'){//删除
                 i++;
-                var delSql = "delete from doc where docid = ?";
-                var parameters = [docLog.docid];
-                DBA.executeSql(delSql,parameters).then(function(result){
-                  //console.log("删除doc id"+ docLog.docid+ "成功");
-
-                  //插入doc_log表
-                  var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
-                  var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
-                  DBA.executeSql(insertSql,parameters).then(function(result){
-                    //console.log("插入doclog成功")
-                  },function(err){
-                    console.log("插入doclog失败");
-                  })
-                },function(err){
-                  console.log(err);
-                  $ionicLoading.show({
-                    template: "更新失败"
-                  });
-                })
-
+                delDoc(docId,docLog,i,len);
                 if(i == len){
                   $timeout(function() {
                     $ionicLoading.hide();
@@ -733,61 +902,18 @@ angular.module('starter.controllers', [])
                 }else{
                   $ionicLoading.hide();
                 }
-              }else{//获取最新
-                var docId = docLog.docid;
+              }else if(docLog.acttype == 'add'){//添加文章
+                i++;
+                addOrUpdateDoc(docId,i,len);
+                insertDocLog(docLog);
+                $rootScope.allCount = $rootScope.allCount + 1;//所有文章数量
 
-                var lastPosition = -2;//获取文章详情，通过后台判断lastPosition=-2时不进行分段加载
-                ArticleService.getArticle(docId,lastPosition,true).then(function(data1){
-
-                  //显示进度
-                  i++;
-                  var downloadProgress = Math.round((i / len) * 100);
-                  var showText = "共" + len + "个更新";
-
-                  showText += "，已同步" + downloadProgress + "%";
-                  $ionicLoading.show({
-                    template:  showText
-                  });
-
-                  var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
-                  //去除html标签 存入字段
-                  var zw_remove_html = data1.tZw.replace(/<[^>]+>/g,"");//去掉所有的html标记
-                  zw_remove_html = zw_remove_html.replace(/(^\s*)|(\s*$)/g, ""); // 去除空格
-                  zw_remove_html = zw_remove_html.replace(/&nbsp;/ig, "");//去除&nbsp
-                  zw_remove_html = zw_remove_html.replace(/(\n)+|(\r\n)+/g, "");//去除换行
-                  //console.log(zw_remove_html);
-                  var parameters = [data1.docid,data1.lmId,data1.suplm,data1.lm,data1.sublm,data1.tBt,data1.tZw,zw_remove_html,data1.tDate];
-                  DBA.executeSql(insertSql,parameters);
-
-                  //隐藏
-                  if(downloadProgress > 99){
-                    if(i == len){
-                      $timeout(function() {
-                        $ionicLoading.hide();
-                      }, 1000);
-                    }else{
-                      $ionicLoading.hide();
-                    }
-
-                  }
-                  //插入doc_log表
-                  var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
-                  var parameters = [docLog.id,docLog.docid,docLog.acttype,docLog.acttime];
-                  DBA.executeSql(insertSql,parameters).then(function(result){
-                    //console.log("插入doclog成功")
-                  },function(err){
-                    console.log("插入doclog失败");
-                  })
-
-                },function(err){
-                  console.log("doc更新失败");
-                  $ionicLoading.show({
-                    template: "同步失败，请检查网络"
-                  });
-                  $timeout(function() {
-                    $ionicLoading.hide();
-                  }, 1000);
-                })
+              }else{
+                //更新
+                i++;
+                addOrUpdateDoc(docId,i,len);
+                insertDocLog(docLog);
+                $rootScope.allCount = $rootScope.allCount ;//文章数量不变
               }
             })
           }else{
@@ -811,24 +937,13 @@ angular.module('starter.controllers', [])
         //获取所有目录和文章
         getAllModuleAndDocList('执法工作手册','','');
         getAllModuleAndDocList('常用法律法规','','');
-        //doc_log. lastId=""表示取最后一条更新
-        var lastId = "";
-        UpdateService.updateCheck(lastId).then(function(result){
-          //console.log("updateCheck result:");
-          //console.log(result.length);
-          //插入doc_log表
-          var insertSql = "insert into doc_log(id,docid,acttype,acttime) values (?,?,?,?)";
-          var parameters = [result[0].id,result[0].docid,result[0].acttype,result[0].acttime];
-          console.log(parameters);
-          DBA.executeSql(insertSql,parameters);
-
-        })
+        insertDocLog();
       }
     })
   };
 
   $scope.update = function() {
-    //TODO
+    //TODO 需联调测试app更新
     var serverVersion = "";
     var updateContext = "版本有更新";
     var apkFilePath = appConfig.url + "/resources/apk/jwsc.apk";
@@ -839,7 +954,6 @@ angular.module('starter.controllers', [])
     });
 
     updatePopup.then(function(res) {
-
       UpdateService.updateApp().then(function(data){
         console.log("request update interface response data:");
         console.log(data);
@@ -865,12 +979,45 @@ angular.module('starter.controllers', [])
         updatePopup.close();
         UpdateService.popupUpdateView(apkFilePath,updateContext);
       }
-
     });
     $timeout(function() {
       updatePopup.close(); //close the popup after 3 seconds for some reason
     }, 3000);
   };
+
+    /**
+     * 检查服务器是否有新增文章
+     */
+    function checkServerDataUpdate(){
+      var sql = "select max(id) as id from doc_log";
+      DBA.executeSql(sql).then(function(result){
+        var lastId = DBA.getById(result).id;;
+        if(lastId == null){
+          lastId = "";
+        }
+        UpdateService.updateCheck(lastId).then(function(result){
+          //console.log("updateCheck result:");
+          //console.log(result.length);
+          //TODO 统计有多少新增，更新、删除
+          if(result.length > 0){
+            $rootScope.updateCount = result.length;
+          }else{
+            $rootScope.updateCount = 0;
+          }
+        })
+      })
+    }
+    /**
+     * 选择设置tab
+     */
+    $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+      if(toState.url == "/account"){
+        if($rootScope.allCount > 0){
+          checkServerDataUpdate();
+          console.log("account stateChangeSuccess to doRefresh");
+        }
+      }
+    });
 })
 
 .controller('InterfaceCtrl',function($scope,$http,$ionicLoading,$rootScope,FolderService,ArticleService,LogsService,UpdateService,appConfig){
@@ -994,5 +1141,4 @@ angular.module('starter.controllers', [])
       $ionicLoading.hide();
     });
   };
-
 });
