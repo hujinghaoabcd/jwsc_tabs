@@ -39,7 +39,7 @@ angular.module('starter.controllers', [])
      * 搜索数据
      */
     function search(){
-      console.log("seach data...");
+      console.log("search data...");
       ArticleServiceForLocal.search($scope.searchData.query).then(function(data){
         $scope.articles = data;
         $scope.searchFlag = true;
@@ -718,8 +718,8 @@ angular.module('starter.controllers', [])
                   //去除html标签 存入字段
                   var zw_remove_html = replaceHtml(data1.tZw);
                   //console.log(zw_remove_html);
-                  var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
-                  var parameters = [docData.docid,docData.lmId,docData.suplm,docData.lm,docData.sublm,docData.tBt,data1.tZw,zw_remove_html,docData.tDate];
+                  var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate,updateTime) VALUES (?,?,?,?,?,?,?,?,?,?)";
+                  var parameters = [docData.docid,docData.lmId,docData.suplm,docData.lm,docData.sublm,docData.tBt,data1.tZw,zw_remove_html,docData.tDate,data1.updateTime];
                   DBA.executeSql(insertSql,parameters);
 
                   //隐藏
@@ -727,7 +727,7 @@ angular.module('starter.controllers', [])
                     $ionicLoading.hide();
                   }
                 },function(err){
-                  console.log("doc更新失败");
+                  console.log("fail to update doc");
                   $ionicLoading.show({
                     template: "同步失败，请检查网络"
                   });
@@ -738,7 +738,7 @@ angular.module('starter.controllers', [])
               });
             }
         },function(err){
-          console.log("doclist更新失败");
+          console.log("fail to update doclist");
           $ionicLoading.show({
               template: "同步失败，请检查网络"
           });
@@ -749,8 +749,9 @@ angular.module('starter.controllers', [])
       }
 
     },function(err){
-      console.log("module更新失败");
+      console.log("fail to update module");
       console.log(err);
+      $rootScope.updateCount = "x400";
       $ionicLoading.show({
         template: "同步失败，请检查网络"
       });
@@ -843,11 +844,11 @@ angular.module('starter.controllers', [])
           template:  showText
         });
 
-        var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate) VALUES (?,?,?,?,?,?,?,?,?)";
+        var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate,updateTime)) VALUES (?,?,?,?,?,?,?,?,?,?)";
         //去除html标签 存入字段
         var zw_remove_html = replaceHtml(data1.tZw);
         //console.log(zw_remove_html);
-        var parameters = [data1.docid,data1.lmId,data1.suplm,data1.lm,data1.sublm,data1.tBt,data1.tZw,zw_remove_html,data1.tDate];
+        var parameters = [data1.docid,data1.lmId,data1.suplm,data1.lm,data1.sublm,data1.tBt,data1.tZw,zw_remove_html,data1.tDate,data1.updateTime];
         DBA.executeSql(insertSql,parameters);
 
         //隐藏
@@ -926,6 +927,7 @@ angular.module('starter.controllers', [])
           }
         },function(err){
           console.log(err);
+          $rootScope.updateCount = "x400";
           $ionicLoading.show({
             template: "同步失败，请检查网络"
           });
@@ -1004,6 +1006,9 @@ angular.module('starter.controllers', [])
           }else{
             $rootScope.updateCount = 0;
           }
+        },function(err){
+          console.log(err);
+          $rootScope.updateCount = "x400";
         })
       })
     }

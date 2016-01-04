@@ -1,4 +1,4 @@
-<ion-view view-title="最新">
+<ion-view view-title="最近更新">
   <ion-content ><!-- class="padding" -->
     <div id="search-bar">
       <div class="item item-input-inset">
@@ -20,7 +20,7 @@
           <img ng-src="img/Wordpad.png">
           <h2 style="overflow: auto; text-overflow: clip;white-space:normal;">{{article.tBt}}</h2>
           <p class="summary">
-            <span ng-if="!searchFlag"><span style="background-color: #80bd01;color: #fff;border-radius: 2px;padding: 2px 4px;">最新</span> {{article.lm}}<span ng-if="article.sublm">/{{article.sublm}}</span></span>
+            <span ng-if="!searchFlag" style="overflow: auto; text-overflow: clip;white-space:normal;"><span style="background-color: #80bd01;color: #fff;border-radius: 2px;padding: 2px 4px;">更新时间：{{article.updateTime | date:'yyyy-MM-dd'}}</span><br/> {{article.lm}}<span ng-if="article.sublm">/{{article.sublm}}</span></span>
             <span ng-if="searchFlag" ng-bind-html="article.lm | to_trusted" style="overflow: auto; text-overflow: clip;white-space:normal;"></span>
           </p>
         </ion-item>

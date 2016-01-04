@@ -3,10 +3,11 @@
     <ion-list>
       <ion-item class="item-icon-right" ng-click="downloadData()">
         同步云端数据（本机现有{{allCount}}篇文章
-        <div ng-if="allCount == 0">，点击同步文章）</div>
+        <div ng-if="allCount == 0 && updateCount !== 'x400'">，点击同步文章）</div>
         <div ng-if="allCount > 0 && updateCount == 0">，无更新内容）</div>
         <div ng-if="updateCount !== undefined && updateCount > 0">，有{{updateCount}}篇文章须更新）</div>
         <div ng-if="updateCount < 0">）</div>
+        <div ng-if="updateCount == 'x400'">，网络未通，未知更新内容）</div>
         <i class="icon ion-android-download"></i>
       </ion-item>
       <ion-item class="item-icon-right" ng-click="clean()">

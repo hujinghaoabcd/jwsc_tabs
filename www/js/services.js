@@ -167,13 +167,13 @@ angular.module('starter.services', [])
               docids += doc.docid + ",";
             })
             docids = docids.substr(0,docids.length - 1);
-            var fromDocLogSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where docid in (" + docids+")";
+            var fromDocLogSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate, updateTime from doc where docid in (" + docids+")";
             DBA.executeSql(fromDocLogSql).then(function(result){
               //console.log(result);
               returnDocList = DBA.getAll(result);
               var size = appConfig.newListNum - returnDocList.length;
 
-              var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where docid not in ("+ docids +") order by docid desc limit ? offset 0"
+              var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate, updateTime  from doc where docid not in ("+ docids +") order by docid desc limit ? offset 0"
               var parameters = [size];
 
               DBA.executeSql(selectSql,parameters).then(function(result){
@@ -196,7 +196,7 @@ angular.module('starter.services', [])
             });
           }else{
             //doc_log为空
-            var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc order by docid desc limit ? offset 0"
+            var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate, updateTime  from doc order by docid desc limit ? offset 0"
             var parameters = [appConfig.newListNum];
 
             DBA.executeSql(selectSql,parameters).then(function(result){
@@ -219,7 +219,7 @@ angular.module('starter.services', [])
         var defer = $q.defer();
         console.log("start get data by local");
 
-        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where suplm = ?"
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate,updateTime from doc where suplm = ?"
         var parameters = [supLm];
 
         var size = appConfig.pageSize;//size:每页显示条数，index页码
@@ -254,7 +254,7 @@ angular.module('starter.services', [])
       getArticle :function(docid){
         var defer = $q.defer();
         console.log("start get data by local");
-        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate,updateTime from doc where  docid = ?";
         var parameters = [docid];
         //console.log(selectSql);
         //console.log(parameters);
@@ -278,7 +278,7 @@ angular.module('starter.services', [])
         var defer = $q.defer();
 
         console.log("start select data by local");
-        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate from doc where zwText like ?";
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate,updateTime from doc where zwText like ?";
         var parameters = ["%" + val + "%"];
         DBA.executeSql(selectSql,parameters).then(function(result){
           //处理副标题tm字段
@@ -337,7 +337,7 @@ angular.module('starter.services', [])
           }else{
             console.log("fail to http POST doclist, start get data by local");
 
-            var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate from doc where suplm = ?"
+            var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate,updateTime from doc where suplm = ?"
             var parameters = [supLm];
 
             var size = 10;//size:每页显示条数，index页码
@@ -398,7 +398,7 @@ angular.module('starter.services', [])
         }else{
           console.log("fail to http POST doc, start get data by local");
 
-          var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate from doc where  docid = ?";
+          var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate,updateTime from doc where  docid = ?";
           var parameters = [docid];
 
           //console.log(selectSql);
@@ -439,7 +439,7 @@ angular.module('starter.services', [])
       }).error(function (err) {
         console.log("fail to http POST search, start get data by local");
 
-        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate from doc where zwText like ?";
+        var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, zwText, tDate,updateTime from doc where zwText like ?";
 
         var parameters = ["%" + val + "%"];
         DBA.executeSql(selectSql,parameters).then(function(result){
