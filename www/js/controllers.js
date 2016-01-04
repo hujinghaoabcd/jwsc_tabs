@@ -844,7 +844,7 @@ angular.module('starter.controllers', [])
           template:  showText
         });
 
-        var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate,updateTime)) VALUES (?,?,?,?,?,?,?,?,?,?)";
+        var insertSql = "replace INTO doc (docid, lmId, suplm,lm,sublm,tBt,tZw,zwText,tDate,updateTime) VALUES (?,?,?,?,?,?,?,?,?,?)";
         //去除html标签 存入字段
         var zw_remove_html = replaceHtml(data1.tZw);
         //console.log(zw_remove_html);
