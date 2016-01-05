@@ -145,7 +145,7 @@ angular.module('starter.services', [])
   })
 
   /** 本地文章service**/
-  .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,DBA,appConfig){
+  .factory('ArticleServiceForLocal',function($q, $http,$rootScope,$stateParams,$filter,DBA,appConfig){
     var service = {    // our factory definition
 
       /**
@@ -254,6 +254,10 @@ angular.module('starter.services', [])
       getArticle :function(docid){
         var defer = $q.defer();
         console.log("start get data by local");
+        var insertAppLog = "insert into app_log(imei,operate_type,operate_content,isSync,create_time) values (?,?,?,?,?)";
+        var parametersAppLog = [$rootScope.myIMEI ,"open doc detail",docid,'0',$filter('date')(new Date(),'yyyy-MM-dd HH:mm:ss')];
+        DBA.executeSql(insertAppLog,parametersAppLog);
+
         var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tZw, tDate,updateTime from doc where  docid = ?";
         var parameters = [docid];
         //console.log(selectSql);
@@ -472,31 +476,62 @@ angular.module('starter.services', [])
 })
 
 /**日志service**/
-.factory('LogsService',function($q, $http,$rootScope,$stateParams,appConfig){
+.factory('LogsService',function($q,$http,$rootScope,$stateParams,$filter,DBA,appConfig){
 
   return {
-    /**添加登录日志**/
-    addLogin : function(myIMEI) {
+    /**发送登录日志到服务器**/
+    sendLog : function(myImei,operateType,operateContent,createTime) {
       var defer = $q.defer();
-        $http({
-          method: "post",
-          url: appConfig.url + "/log",
-          params: {'deviceId':myIMEI},
-          headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'appId': appConfig.appId
-          },
-          cache: $rootScope.useCache
-        }).success(function (data){
-          if(data.status == 'FAIL'){//后台返回FAIL
-            defer.reject(data.status);
-          }else{
-            defer.resolve(data.status);
-          }
-        }).error(function (err){
-          console.log("fail to http POST /log");
-          defer.reject(err);
-        });
+
+      createTime = $filter('date')(createTime,'yyyy-MM-dd HH:mm:ss');
+      $http({
+        method: "post",
+        url: appConfig.url + "/log",
+        params: {'deviceId':myImei,'operateType':operateType,'operateContent':operateContent,'createTime':createTime},
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'appId': appConfig.appId
+        },
+        cache: $rootScope.useCache
+      }).success(function (data){
+        if(data.status == 'FAIL'){//后台返回FAIL
+          defer.reject(data.status);
+        }else{
+          defer.resolve(data.status);
+        }
+      }).error(function (err){
+        console.log("fail to http POST /log");
+        defer.reject(err);
+      });
+      return defer.promise;
+    },
+    /**获取需要同步到服务端数据**/
+    getSyncLogList : function(){
+      var defer = $q.defer();
+
+      var sql = "select * from app_log where isSync='0'";
+      DBA.executeSql(sql).then(function(result){
+        //console.log(result);
+        defer.resolve(DBA.getAll(result));
+      },function(err){
+        console.log("DBA err");
+        defer.reject(err);
+      });
+      return defer.promise;
+    },
+    /**更新AppLog状态**/
+    updateLog : function(id){
+      var defer = $q.defer();
+
+      var updateSql = "update app_log set isSync='1' where id=?";
+      var parameters = [id];
+      DBA.executeSql(updateSql,parameters).then(function(result){
+        //console.log(result);
+        defer.resolve(result);
+      },function(err){
+        console.log("DBA err");
+        defer.reject(err);
+      });
       return defer.promise;
     }
   };

@@ -565,7 +565,7 @@ angular.module('starter.controllers', [])
 })
 
 .controller('AccountCtrl', function($scope,$rootScope, $ionicPopup, $ionicLoading,
-                                    $ionicPopover, $timeout,DBA,FolderService,ArticleService,UpdateService,appConfig) {
+                                    $ionicPopover, $timeout,DBA,FolderService,ArticleService,UpdateService,LogsService,appConfig) {
 
   $scope.useCache = $rootScope.useCache;
   $scope.versionName = $rootScope.versionName;
@@ -747,7 +747,6 @@ angular.module('starter.controllers', [])
           }, 1000);
         });
       }
-
     },function(err){
       console.log("fail to update module");
       console.log(err);
@@ -918,6 +917,7 @@ angular.module('starter.controllers', [])
               }
             })
           }else{
+            $rootScope.updateCount = 0;
             $ionicLoading.show({
               template: "现在网络上没有新数据，不需同步"
             });
@@ -942,6 +942,17 @@ angular.module('starter.controllers', [])
         insertDocLog();
       }
     })
+    //send log
+    LogsService.getSyncLogList().then(function(result){
+      console.log(result);
+      angular.forEach(result,function(log){
+        LogsService.sendLog($rootScope.myIMEI,log.operate_type,log.operate_content,log.create_time).then(function(result){
+          LogsService.updateLog(log.id);
+        },function(err){
+          console.log("fail to send log.id=" + log.id);
+        })
+      })
+    });
   };
 
   $scope.update = function() {

@@ -19,7 +19,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         "pageSize" : 10,//显示文章列表数量
         "newListNum": 10//最新列表文章数量
 })
-.run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$location,$ionicHistory,$timeout,
+.run(function($rootScope,$ionicPlatform,$ionicPopup,$log,$ionicLoading,$location,$ionicHistory,$timeout,$filter,
   $cordovaFileTransfer, $cordovaFile, $cordovaFileOpener2,$cordovaSQLite,DBA,LogsService,UpdateService,appConfig) {
 
   //主页面显示退出提示框
@@ -90,9 +90,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       var createDocTable = "CREATE TABLE IF NOT EXISTS doc (docid integer primary key, lmId integer,suplm varchar(200),lm varchar(512),sublm varchar(50),tBt varchar(512),tZw text, zwText text,tDate varchar(20),updateTime DATETIME)";
       var createModuleTable = "CREATE TABLE IF NOT EXISTS moduleName (id integer primary key, moduleid varchar(50),supModuleName varchar(200),moduleName varchar(200),subModuleName varchar(200))";
       var createDocLogTable = "CREATE TABLE IF NOT EXISTS doc_log(id integer,docid integer,acttype varchar(20),acttime DATETIME)";
+      var createAppLogTable = "CREATE TABLE IF NOT EXISTS app_log(id integer primary key,imei varchar(50),operate_type varchar(20),operate_content varchar(50),isSync varchar(2),create_time DATETIME)";
       $cordovaSQLite.execute(db,createDocTable);
       $cordovaSQLite.execute(db,createModuleTable);
       $cordovaSQLite.execute(db,createDocLogTable);
+      $cordovaSQLite.execute(db,createAppLogTable);
     }
     createTable();
 
@@ -133,15 +135,22 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     $rootScope.myIMEI = myImei;
     console.log($rootScope.myIMEI);
     if(undefined == $rootScope.myIMEI){
-      $rootScope.myIMEI = "testWeb";
+      $rootScope.myIMEI = "testForWeb";
     }
 
     //操作系统信息
     var currentPlatformVersion = ionic.Platform.version();
     console.log("currentPlatformVersion:" + currentPlatformVersion);
 
-    //记录登录日志(
-    LogsService.addLogin(myImei);
+    //记录登录日志
+    LogsService.sendLog($rootScope.myIMEI,'login app','index',new Date()).then(function(result){
+      console.log("success to send log");
+    },function(err){
+      //insert local log
+      var insertAppLog = "insert into app_log(imei,operate_type,operate_content,isSync,create_time) values (?,?,?,?,?)";
+      var parameters = [$rootScope.myIMEI,"login app","index","0",$filter('date')(new Date(),'yyyy-MM-dd HH:mm:ss')];
+      DBA.executeSql(insertAppLog,parameters);
+    });
 
     //更新
     function updateVersion(){
