@@ -571,7 +571,7 @@ angular.module('starter.services', [])
       var defer = $q.defer();
         $http({
           method: "post",
-          url: appConfig.url + "/AppUpdate",
+          url: appConfig.url + "/appUpdate",
           params: {'version':$rootScope.versionName},
           headers: {
               'Content-Type': 'application/x-www-form-urlencoded',

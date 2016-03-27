@@ -289,7 +289,15 @@ angular.module('starter.controllers', [])
     };
 }])
 
-.controller('ArticleCtrl', function($scope, $ionicLoading, $ionicPopup, $stateParams,$timeout, ArticleServiceForLocal) {
+.controller('ArticleCtrl', function($scope, $location,$ionicScrollDelegate,$ionicLoading, $ionicPopup, $stateParams,$timeout, ArticleServiceForLocal) {
+
+    //控制滚动视图
+    $scope.scrollTo = function (id) {
+      alert(id);
+      $location.hash(id);
+      var delegateHandle = $ionicScrollDelegate.$getByHandle('myContent');
+      delegateHandle.anchorScroll(true);
+    };
 
   $scope.lastPosition = "";
   $scope.noMoreAvailable = false;
@@ -1036,7 +1044,15 @@ angular.module('starter.controllers', [])
     });
 })
 
-.controller('InterfaceCtrl',function($scope,$http,$ionicLoading,$rootScope,FolderService,ArticleService,LogsService,UpdateService,appConfig){
+.controller('InterfaceCtrl',function($scope,$http,$location,$ionicScrollDelegate,$ionicLoading,$rootScope,FolderService,ArticleService,LogsService,UpdateService,appConfig){
+
+    //控制滚动视图
+    $scope.scrollTo = function (id) {
+      //alert(id);
+      $location.hash(id);
+      var delegateHandle = $ionicScrollDelegate.$getByHandle('myContent');
+      delegateHandle.anchorScroll(true);
+    };
 
   $scope.getModule = function(){
     $scope.requestUrl = appConfig.url + "/module";
