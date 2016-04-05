@@ -1166,7 +1166,7 @@ angular.module('starter.controllers', [])
       $scope.result = data;
       $scope.status = data.status;
       $scope.errorMsg = data.message;
-      console.log("update=" + data);
+      console.log(data.name);
       $ionicLoading.hide();
     },function(err){
       $scope.result = err;

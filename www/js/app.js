@@ -8,12 +8,12 @@
 var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
-        "url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
-        //"url": "http://192.168.1.107:8080",//本地
+        //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
+        //"url": "http://192.168.1.103:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
-        //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
-        "appId": "cnfj.jwsc.6259",//appid名字
-        "versionName":"2.0.0",//版本
+        "url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
+        "appId": "cnfj.jwsc.6259",//apk唯一标识符
+        "versionNum":"2.0.0",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\jwsc.db",//数据库路径
         "targetPath":"file:///storage/sdcard0/Download/jwsc_update.apk",//下载文件地址
         "pageSize" : 10,//显示文章列表数量
@@ -64,24 +64,30 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     $rootScope.lawsCurrentPage = 1;
     $rootScope.useCache = false;//是否使用缓存
 
+    //设置当前版本号信息
+    function setVersionInfo(ver){
+      $rootScope.versionName = ver;
+    };
+
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
       cordova.plugins.Keyboard.disableScroll(true);
 
+      //获取当前版本号
       cordova.getAppVersion.getVersionNumber(function (version) {
-        console.log("varsion:" + version);
+        console.log("version:" + version);
         setVersionInfo(version);
-        if(serverVersion !="" && version != serverVersion){
-          updateVersion();//弹出更新窗口
-        }
+
       });
 
       //$cordovaSQLite.deleteDatabase(appConfig.dbName);
       db = $cordovaSQLite.openDB(appConfig.dbName);
     }else{
+      console.log("chrome debug......");
       db = window.openDatabase(appConfig.dbName, "1.0", "jwscdb", -1);
+      setVersionInfo(appConfig.versionNum);
     }
     /**
      * 创建表
@@ -104,9 +110,10 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     }
 
     //TODO  获取应用更新信息
-    var serverVersion = appConfig.versionName;
+    var serverVersion = "";//appConfig.versionNum;
     var updateContext = "版本有更新";
     var apkFilePath = appConfig.url + "/resources/apk/jwsc.apk";
+    console.log($rootScope.versionName);
     UpdateService.updateApp().then(function(data){
       //console.log("request update interface response data:");
       //console.log(data);
@@ -114,29 +121,30 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         serverVersion = data.content.packageVersion;//应用版本号
         apkFilePath = data.content.pkgFilePath;//更新地址
         updateContext = data.content.packageDesc;//应用描述
+
+        if(serverVersion !="" && $rootScope.versionName != serverVersion){
+          updateVersion();//弹出更新窗口
+        }
       };
-    },function(err){
+    },function(error){
       console.log("request updateApp interface error");
     });
 
-    //设置全局版本号信息
-    function setVersionInfo(ver){
-      $rootScope.versionName = ver;
-    };
+
 
     ionic.Platform.ready(function(){
       // will execute when device is ready, or immediately if the device is already ready.
-      //研究使用方式？
+      //TODO 研究使用方式？
     });
 
     //获取平台信息、手机imei
     var deviceInformation = ionic.Platform.device();
     var myImei = deviceInformation.uuid;
     $rootScope.myIMEI = myImei;
-    console.log($rootScope.myIMEI);
     if(undefined == $rootScope.myIMEI){
       $rootScope.myIMEI = "testForWeb";
     }
+    console.log($rootScope.myIMEI);
 
     //操作系统信息
     var currentPlatformVersion = ionic.Platform.version();
