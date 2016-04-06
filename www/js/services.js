@@ -156,7 +156,7 @@ angular.module('starter.services', [])
 
         var returnDocList =[];
         var docLogList;
-        var docLogSql = "select distinct docid from doc_log where acttype !='del' order by acttime limit ? offset 0";
+        var docLogSql = "select distinct docid from doc_log where acttype !='del' order by acttime desc limit ? offset 0";
         var params = [appConfig.newListNum];
         DBA.executeSql(docLogSql,params).then(function(result){
           //console.log(result);
@@ -167,7 +167,7 @@ angular.module('starter.services', [])
               docids += doc.docid + ",";
             })
             docids = docids.substr(0,docids.length - 1);
-            var fromDocLogSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate, updateTime from doc where docid in (" + docids+")";
+            var fromDocLogSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate, updateTime from doc where docid in (" + docids+") order by updateTime desc";
             DBA.executeSql(fromDocLogSql).then(function(result){
               //console.log(result);
               returnDocList = DBA.getAll(result);
