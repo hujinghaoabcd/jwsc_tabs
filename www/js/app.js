@@ -9,7 +9,7 @@ var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
         //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
-        "url": "http://192.168.1.103:8080",//本地
+        "url": "http://192.168.1.100:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
         //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//apk唯一标识符

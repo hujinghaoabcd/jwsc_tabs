@@ -173,7 +173,7 @@ angular.module('starter.services', [])
               returnDocList = DBA.getAll(result);
               var size = appConfig.newListNum - returnDocList.length;
 
-              var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate, updateTime  from doc where docid not in ("+ docids +") order by docid desc limit ? offset 0"
+              var selectSql = "select docid, lmId, suplm, lm, sublm, tBt, tDate, updateTime  from doc where docid not in ("+ docids +") order by updateTime desc limit ? offset 0"
               var parameters = [size];
 
               DBA.executeSql(selectSql,parameters).then(function(result){

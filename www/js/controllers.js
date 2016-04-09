@@ -293,9 +293,9 @@ angular.module('starter.controllers', [])
 
     //控制滚动视图
     $scope.scrollTo = function (id) {
-      alert(id);
+      //alert(id);
       $location.hash(id);
-      var delegateHandle = $ionicScrollDelegate.$getByHandle('myContent');
+      var delegateHandle = $ionicScrollDelegate.$getByHandle('articleContent');
       delegateHandle.anchorScroll(true);
     };
 

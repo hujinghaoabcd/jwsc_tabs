@@ -35,6 +35,9 @@
     <icon src="resources/android/icon/drawable-ldpi-icon.png" density="ldpi"/>
     <icon src="resources/android/icon/drawable-mdpi-icon.png" density="mdpi"/>
     <icon src="resources/android/icon/drawable-hdpi-icon.png" density="hdpi"/>
+    <icon src="resources/android/icon/drawable-xhdpi-icon.png" density="xhdpi"/>
+    <icon src="resources/android/icon/drawable-xxhdpi-icon.png" density="xxhdpi"/>
+    <icon src="resources/android/icon/drawable-xxxhdpi-icon.png" density="xxxhdpi"/>
   </platform>
   <platform name="ios">
     <splash src="resources/ios/splash/Default-568h@2x~iphone.png" height="1136" width="640"/>
@@ -55,4 +58,5 @@
     <icon src="resources/ios/icon/icon-small.png" width="29" height="29"/>
     <icon src="resources/ios/icon/icon-small@2x.png" width="58" height="58"/>
   </platform>
+  <icon src="resources/android/icon/drawable-xhdpi-icon.png"/>
 </widget>
