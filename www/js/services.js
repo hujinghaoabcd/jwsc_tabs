@@ -567,12 +567,12 @@ angular.module('starter.services', [])
       return defer.promise;
     },
     /**更新APP**/
-    updateApp : function() {
+    updateApp : function(version) {
       var defer = $q.defer();
         $http({
           method: "post",
           url: appConfig.url + "/update",
-          params: {'version':$rootScope.versionName},
+          params: {'version':version},
           headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
               'appId': appConfig.appId
@@ -606,12 +606,11 @@ angular.module('starter.services', [])
               });
               var url = apkFilePath; //可以从服务端获取更新APP的路径
               var targetPath = appConfig.targetPath; //APP下载存放的路径，可以使用cordova file插件进行相关配置
-              var trustHosts = true
+              var trustHosts = true;
               var options = {};
               $cordovaFileTransfer.download(url, targetPath, options, trustHosts).then(function (result) {
                   // 打开下载下来的APP
-                  $cordovaFileOpener2.open(targetPath, 'application/vnd.android.package-archive'
-                  ).then(function () {
+                  $cordovaFileOpener2.open(targetPath, 'application/vnd.android.package-archive').then(function () {
                           // 成功
                           console.log("open apk success");
                       }, function (err) {
@@ -619,13 +618,14 @@ angular.module('starter.services', [])
                           console.log("open apk fail");
                       });
                   $ionicLoading.hide();
-              }, function (err) {
+              }, function (error) {
                   //alert('下载失败');
                   $ionicLoading.show({
-                    template: "下载失败"
+                    template: "下载失败!"
                   });
-                  console.log('update!'+ res);
-                    $timeout(function() {
+                  console.log('Error');
+                  console.log(error);
+                  $timeout(function() {
                     $ionicLoading.hide();
                   }, 1000);
               }, function (progress) {
@@ -642,7 +642,7 @@ angular.module('starter.services', [])
               });
           } else {
               // 取消更新
-            console.log("取消更新")
+            console.log("cancel update")
           }
       });
     }

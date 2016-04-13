@@ -9,9 +9,9 @@ var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
         //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
-        "url": "http://192.168.1.100:8080",//本地
+        //"url": "http://192.168.1.103:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
-        //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
+        "url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//apk唯一标识符
         "versionNum":"1.1.0",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\jwsc.db",//数据库路径
@@ -64,10 +64,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     $rootScope.lawsCurrentPage = 1;
     $rootScope.useCache = false;//是否使用缓存
 
-    //设置当前版本号信息
-    function setVersionInfo(ver){
-      $rootScope.versionName = ver;
-    };
+
 
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -89,6 +86,34 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       db = window.openDatabase(appConfig.dbName, "1.0", "jwscdb", -1);
       setVersionInfo(appConfig.versionNum);
     }
+
+    //设置当前版本号信息
+    function setVersionInfo(version){
+      console.log("ver=" + version);
+      $rootScope.versionName = version;
+      //获取应用更新信息
+      var serverVersion = "";//appConfig.versionNum;
+      var updateContext = "版本更新";
+      var apkFilePath = appConfig.url + "/resources/apk/jwsc.apk";
+      console.log("$rootScope.versionName=" + $rootScope.versionName);
+      UpdateService.updateApp(version).then(function(data){
+        //console.log("request update interface response data:");
+        console.log(data);
+        if (data.totalCount == 1) {
+          serverVersion = data.content[0].packageVersion;//应用版本号
+          apkFilePath = data.content[0].pkgFilePath;//更新地址
+          updateContext = data.content[0].packageDesc;//应用描述
+
+          if(serverVersion !="" && version != serverVersion){
+            UpdateService.popupUpdateView(apkFilePath,updateContext);
+          }
+        }
+      },function(error){
+        console.log("request updateApp interface error");
+        console.log(error);
+      });
+    };
+
     /**
      * 创建表
      */
@@ -108,29 +133,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       // org.apache.cordova.statusbar required
       StatusBar.styleLightContent();
     }
-
-    //TODO  获取应用更新信息
-    var serverVersion = "";//appConfig.versionNum;
-    var updateContext = "版本有更新";
-    var apkFilePath = appConfig.url + "/resources/apk/jwsc.apk";
-    console.log($rootScope.versionName);
-    UpdateService.updateApp().then(function(data){
-      //console.log("request update interface response data:");
-      //console.log(data);
-      if (data.totalCount == 1) {
-        serverVersion = data.content.packageVersion;//应用版本号
-        apkFilePath = data.content.pkgFilePath;//更新地址
-        updateContext = data.content.packageDesc;//应用描述
-
-        if(serverVersion !="" && $rootScope.versionName != serverVersion){
-          updateVersion();//弹出更新窗口
-        }
-      };
-    },function(error){
-      console.log("request updateApp interface error");
-    });
-
-
 
     ionic.Platform.ready(function(){
       // will execute when device is ready, or immediately if the device is already ready.
@@ -159,11 +161,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       var parameters = [$rootScope.myIMEI,"login app","index","0",$filter('date')(new Date(),'yyyy-MM-dd HH:mm:ss')];
       DBA.executeSql(insertAppLog,parameters);
     });
-
-    //更新
-    function updateVersion(){
-        UpdateService.popupUpdateView(apkFilePath,updateContext);
-    }
 
     $rootScope.updateCount = 0;
     //数据库内容为空，提示同步数据库
