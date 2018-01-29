@@ -675,7 +675,7 @@ angular.module('starter.controllers', [])
       $ionicLoading.show({
         template: "正在同步..."
       });
-      if (data.length > 0) {
+      if (data != undefined && data.length != undefined && data.length > 0) {
         angular.forEach(data, function(moduleData){
           $ionicLoading.show({
             template: "正在同步..."
@@ -696,7 +696,7 @@ angular.module('starter.controllers', [])
             $ionicLoading.show({
               template: "正在同步..."
             });
-            if (data.length > 0) {
+            if (data.length != undefined && data.length > 0) {
               var len = data.length;
               var i = 0;
               angular.forEach(data, function(docData){
@@ -731,13 +731,13 @@ angular.module('starter.controllers', [])
                   DBA.executeSql(insertSql,parameters);
 
                   //隐藏
-                  if(downloadProgress > 99){
+                  if(downloadProgress > 99) {
                     $ionicLoading.hide();
                   }
                 },function(err){
                   console.log("fail to update doc");
                   $ionicLoading.show({
-                    template: "同步失败，请检查网络"
+                    template: "同步失败，请检查网络1" + err
                   });
                   $timeout(function() {
                     $ionicLoading.hide();
@@ -748,7 +748,7 @@ angular.module('starter.controllers', [])
         },function(err){
           console.log("fail to update doclist");
           $ionicLoading.show({
-              template: "同步失败，请检查网络"
+              template: "同步失败，请检查网络2"+ err
           });
           $timeout(function() {
             $ionicLoading.hide();
@@ -760,7 +760,7 @@ angular.module('starter.controllers', [])
       console.log(err);
       $rootScope.updateCount = "x400";
       $ionicLoading.show({
-        template: "同步失败，请检查网络"
+        template: "同步失败，请检查网络3" + err.message
       });
       $timeout(function() {
         $ionicLoading.hide();
@@ -871,7 +871,7 @@ angular.module('starter.controllers', [])
       },function(err){
         console.log("fail to update doc");
         $ionicLoading.show({
-          template: "同步失败，请检查网络"
+          template: "同步失败，请检查网络4" + err
         });
         $timeout(function() {
           $ionicLoading.hide();
@@ -893,7 +893,7 @@ angular.module('starter.controllers', [])
         UpdateService.updateCheck(lastId).then(function(result){
           console.log("updateCheck result:");
           console.log(result);
-          if(result.length > 0){
+          if(result != undefined && result.length != undefined && result.length > 0){
             //获取更新的
             var i = 0;
             var len = result.length;
@@ -937,7 +937,7 @@ angular.module('starter.controllers', [])
           console.log(err);
           $rootScope.updateCount = "x400";
           $ionicLoading.show({
-            template: "同步失败，请检查网络"
+            template: "同步失败，请检查网络5" + err
           });
           $timeout(function() {
             $ionicLoading.hide();
@@ -1020,7 +1020,7 @@ angular.module('starter.controllers', [])
           //console.log("updateCheck result:");
           //console.log(result.length);
           //TODO 统计有多少新增，更新、删除
-          if(result.length > 0){
+          if(result != undefined && result.length != undefined && result.length > 0){
             $rootScope.updateCount = result.length;
           }else{
             $rootScope.updateCount = 0;

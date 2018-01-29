@@ -9,9 +9,9 @@ var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
         //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
-        //"url": "http://192.168.1.100:8080",//本地
+        "url": "http://192.168.0.150:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
-        "url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
+        //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//apk唯一标识符
         "versionNum":"1.2.1",//版本
         "dbName":".sh.gaj\\sh.gaj.cnfj.jwsc\\jwsc.db",//数据库路径
@@ -99,7 +99,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       UpdateService.updateApp(version).then(function(data){
         //console.log("request update interface response data:");
         console.log(data);
-        if (data.totalCount == 1) {
+        if (data != undefined && data.totalCount != undefined && data.totalCount == 1) {
           serverVersion = data.content[0].packageVersion;//应用版本号
           apkFilePath = data.content[0].pkgFilePath;//更新地址
           updateContext = data.content[0].packageDesc;//应用描述
