@@ -9,7 +9,7 @@ var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','ngCordova'])
 .constant("appConfig", {
         //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
-        "url": "http://192.168.0.150:8080",//本地
+        "url": "http://192.168.1.102:8080",//本地
         //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
         //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
         "appId": "cnfj.jwsc.6259",//apk唯一标识符
@@ -75,7 +75,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
       //获取当前版本号
       cordova.getAppVersion.getVersionNumber(function (version) {
         console.log("version:" + version);
-        setVersionInfo(version);
+        //setVersionInfo(version);
 
       });
 
@@ -84,11 +84,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
     }else{
       console.log("chrome debug......");
       db = window.openDatabase(appConfig.dbName, "1.0", "jwscdb", -1);
-      setVersionInfo(appConfig.versionNum);
+      //setVersionInfo(appConfig.versionNum);
     }
 
     //设置当前版本号信息
-    function setVersionInfo(version){
+    /*function setVersionInfo(version){
       console.log("ver=" + version);
       $rootScope.versionName = version;
       //获取应用更新信息
@@ -114,7 +114,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services','n
         console.log("request updateApp interface error");
         console.log(error);
       });
-    };
+    };*/
 
     /**
      * 创建表

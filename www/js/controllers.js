@@ -737,7 +737,7 @@ angular.module('starter.controllers', [])
                 },function(err){
                   console.log("fail to update doc");
                   $ionicLoading.show({
-                    template: "同步失败，请检查网络1" + err
+                    template: "同步失败，请检查网络"
                   });
                   $timeout(function() {
                     $ionicLoading.hide();
@@ -748,7 +748,7 @@ angular.module('starter.controllers', [])
         },function(err){
           console.log("fail to update doclist");
           $ionicLoading.show({
-              template: "同步失败，请检查网络2"+ err
+              template: "同步失败，请检查网络"
           });
           $timeout(function() {
             $ionicLoading.hide();
@@ -760,7 +760,7 @@ angular.module('starter.controllers', [])
       console.log(err);
       $rootScope.updateCount = "x400";
       $ionicLoading.show({
-        template: "同步失败，请检查网络3" + err.message
+        template: "同步失败，请检查网络"
       });
       $timeout(function() {
         $ionicLoading.hide();
@@ -871,7 +871,7 @@ angular.module('starter.controllers', [])
       },function(err){
         console.log("fail to update doc");
         $ionicLoading.show({
-          template: "同步失败，请检查网络4" + err
+          template: "同步失败，请检查网络"
         });
         $timeout(function() {
           $ionicLoading.hide();
@@ -937,7 +937,7 @@ angular.module('starter.controllers', [])
           console.log(err);
           $rootScope.updateCount = "x400";
           $ionicLoading.show({
-            template: "同步失败，请检查网络5" + err
+            template: "同步失败，请检查网络"
           });
           $timeout(function() {
             $ionicLoading.hide();
