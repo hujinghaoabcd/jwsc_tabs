@@ -8,8 +8,10 @@
 var db = null;
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'ngCordova'])
   .constant("appConfig", {
-    //"url": "http://139.196.170.172:8080/cnfj/jwsc/jwscapi",//阿里云后台服务地址
+    //"url": "http://139.196.170.172:8090/jwscapi",//阿里云后台服务地址
     "url": "http://192.168.1.102:8080",//本地
+    //"url": "http://192.168.1.150:8080",//百姓公司内网
+    //"url": "http://20.2.1.24:8080/jwscapi",//公安内网测试
     //"url": "http://10.16.163.200:8060/cnfj/jwsc/jwscapi",
     //"url": "http://192.168.1.44:10009/cnfj/jwsc/jwscapi",//警务通
     "appId": "cnfj.jwsc.6259",//apk唯一标识符
