@@ -604,14 +604,15 @@ angular.module('starter.controllers', [])
       myPopup.then(function (res) {
         console.log('clean!');
         window.localStorage.clear();
-        var delSql = "delete from app_log";
-        DBA.executeSql(delSql);
+        //var delSql = "delete from app_log";
+        //DBA.executeSql(delSql);
         delSql = "delete from doc";
         DBA.executeSql(delSql);
         delSql = "delete from doc_log";
         DBA.executeSql(delSql);
         delSql = "delete from moduleName";
         DBA.executeSql(delSql);
+        $rootScope.allCount = 0;
       });
       $timeout(function () {
         myPopup.close(); //close the popup after 3 seconds for some reason
